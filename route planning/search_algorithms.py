@@ -10,7 +10,7 @@
 #   return path
 #
 # 'grid' is a 2-D numpy array where 1s represent obstacles
-# 'start_point' and 'target_point' are x, y pairs
+# 'start_point' and 'target_point' are [x, y] pairs
 # 'path' is a list of [x, y] pairs, all turning points along route
 #
 # ALgorithms can be tested using the 'test_search_algo' method of the
