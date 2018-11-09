@@ -45,12 +45,12 @@ class GridWorld:
                         map[y, x] = 1
 
         # Assign starting location
-        start_x = random.randint(0, width)
-        start_y = random.randint(lower_bound, length)
+        start_x = random.randint(0, width-1)
+        start_y = random.randint(lower_bound, length-1)
 
         # Assign ending location
-        target_x = random.randint(0, width)
-        target_y = random.randint(0, upper_bound)
+        target_x = random.randint(0, width-1)
+        target_y = random.randint(0, upper_bound-1)
 
         # Initialize class variables
         self.grid = map
@@ -106,11 +106,11 @@ class GridWorld:
 #######################################
 
 # Generate a random GridWorld
-my_grid = GridWorld(30, 15, 2, 2, 5)
+my_grid = GridWorld(300, 200, 5, 20, 30)
 my_grid.show_image()
 
 # Test each algorithm
-my_grid.test_search_algo(breadth_first)
+my_grid.test_search_algo(greedy_bfs)
 
 
 
