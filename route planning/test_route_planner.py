@@ -106,11 +106,11 @@ class GridWorld:
 #######################################
 
 # Generate a random GridWorld
-my_grid = GridWorld(300, 200, 6, 20, 60)
+my_grid = GridWorld(30, 15, 2, 2, 5)
+my_grid.show_image()
 
 # Test each algorithm
-my_grid.test_search_algo(A_star)
-my_grid.test_search_algo(theta_star)
+my_grid.test_search_algo(breadth_first)
 
 
 
