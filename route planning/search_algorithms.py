@@ -25,6 +25,10 @@ from operator import itemgetter
 from math import *
 
 
+#####################
+# HELPER FUNCTIONS #
+#####################
+
 # Convenience function, returns a list of the neighbors of a point
 # in a grid with the specified dimensions
 def get_neighbors(dims, point):
@@ -45,6 +49,10 @@ def get_neighbors(dims, point):
 def get_dist(p1, p2):
     return sqrt((p2[0] - p1[0])**2 + (p2[1] - p2[0])**2)
 
+
+#####################
+# SEARCH ALGORITHMS #
+#####################
 
 # Simple breadth / depth first search algorithm - very slow
 # Uses depth first by default
