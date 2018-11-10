@@ -24,6 +24,15 @@ from collections import deque
 from operator import itemgetter
 from math import *
 
+#####################
+# CLASSES           #
+#####################
+
+class Point:
+    def __init__(position):
+        self.x,self.y = 0
+
+
 
 #####################
 # HELPER FUNCTIONS #
@@ -146,6 +155,7 @@ def greedy_bfs(grid, start_pos, end_pos):
 # A star search algorithm for path planning
 def A_star(grid, start_pos, end_pos):
     path = []
+
     return path
 
 # Theta star search algorithm for path planning - any angle extension of A star
