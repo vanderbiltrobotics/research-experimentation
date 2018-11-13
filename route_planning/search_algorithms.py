@@ -29,8 +29,18 @@ from math import *
 #####################
 
 class Point:
-    def __init__(position):
-        self.x,self.y = 0
+
+    def __init__(self, parent=None, position=None):
+        self.parent = parent
+        self.x = position[0]
+        self.y = position[1]
+        self.g = 0
+        self.h = 0
+        self.f = self.g+self.h
+
+    def cost(self):
+        self.f = self.g+self.h
+        return self.f
 
 
 
@@ -56,7 +66,7 @@ def get_neighbors(dims, point):
 
 # Returns distance between two points - useful heuristic for informed search
 def get_dist(p1, p2):
-    return sqrt((p2[0] - p1[0])**2 + (p2[1] - p2[0])**2)
+    return sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[0])**2)
 
 
 #####################
@@ -155,7 +165,16 @@ def greedy_bfs(grid, start_pos, end_pos):
 # A star search algorithm for path planning
 def A_star(grid, start_pos, end_pos):
     path = []
+    start = Point(None, start_pos)
+    end = Point(None, end_pos)
+    current = start
+    unchecked = []
+    checked = []
+    while(not list. and not get_dist([current.x,current.y],[end.x,end.y])==0):
 
+    while(not current.parent == None):
+        path.append(current)
+        current=current.parent
     return path
 
 # Theta star search algorithm for path planning - any angle extension of A star
