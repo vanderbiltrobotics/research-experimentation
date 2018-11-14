@@ -169,7 +169,7 @@ def A_star(grid, start_pos, end_pos):
     unchecked = [start]
     current = start
     checked = []
-    while(not len(unchecked)==0):w
+    while(not len(unchecked)==0):
         #TODO: add sort
         current = unchecked[0]
         if current.x == end.x and current.y == end.y:
