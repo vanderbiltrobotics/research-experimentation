@@ -168,9 +168,9 @@ def A_star(grid, start_pos, end_pos):
     start = Point(None, start_pos)
     end = Point(None, end_pos)
     current = start
-    unchecked = []
+    unchecked = [start]
     checked = []
-    while(not list. and not get_dist([current.x,current.y],[end.x,end.y])==0):
+    while(not len(unchecked)==0 and not get_dist([current.x,current.y],[end.x,end.y])==0):
 
     while(not current.parent == None):
         path.append(current)
