@@ -172,12 +172,20 @@ def A_star(grid, start_pos, end_pos):
     while(not len(unchecked)==0):
         #TODO: add sort
         current = unchecked[0]
+        if current.x == end.x and current.y == end.y:
+            break
         unchecked.remove(current)
         checked.append(current)
+        #TODO: update the get_neighbors function for the class
         for neighbour in get_neighbors(grid,[current.x,current.y]):
             if neighbour in checked:
                 continue
-            neighbour.
+            tempG = ++current.g
+            if neighbour not in unchecked or tempG < neighbour.g:
+                unchecked.append(neighbour)
+                neighbour.g = tempG
+                neighbour.h = get_dist([neighbour.x,neighbour.y],[end.x,end.y])
+
     while(not current.parent == None):
         path.append(current)
         current=current.parent
