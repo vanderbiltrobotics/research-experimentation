@@ -63,7 +63,6 @@ def get_neighbors(dims, point):
         neighbors.append([point[0], point[1] + 1])
     return neighbors
 
-
 # Returns distance between two points - useful heuristic for informed search
 def get_dist(p1, p2):
     return sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[0])**2)
@@ -167,11 +166,18 @@ def A_star(grid, start_pos, end_pos):
     path = []
     start = Point(None, start_pos)
     end = Point(None, end_pos)
-    current = start
     unchecked = [start]
+    current = start
     checked = []
-    while(not len(unchecked)==0 and not get_dist([current.x,current.y],[end.x,end.y])==0):
-
+    while(not len(unchecked)==0):
+        unchecked.sort()
+        current = unchecked[0]
+        unchecked.remove(current)
+        checked.append(current)
+        for neighbour in get_neighbors(grid,[current.x,current.y]):
+            if neighbour in checked:
+                continue
+            neighbour.
     while(not current.parent == None):
         path.append(current)
         current=current.parent
