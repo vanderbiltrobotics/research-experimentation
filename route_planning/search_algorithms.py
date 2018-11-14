@@ -20,6 +20,7 @@
 
 # Import required packages
 import numpy as np
+import inspect
 from collections import deque
 from operator import itemgetter
 from math import *
@@ -53,14 +54,28 @@ class Point:
 def get_neighbors(dims, point):
     dims_xy = [dims[1], dims[0]]  # Order dimensions this way to avoid confusion
     neighbors = []
-    if point[0] > 0:
-        neighbors.append([point[0] - 1, point[1]])
-    if point[0] < dims_xy[0] - 1:
-        neighbors.append([point[0] + 1, point[1]])
-    if point[1] > 0:
-        neighbors.append([point[0], point[1] - 1])
-    if point[1] < dims_xy[1] - 1:
-        neighbors.append([point[0], point[1] + 1])
+    if isinstance(point, Point):
+        if point.x > 0:
+            point.x = point.x - 1
+            neighbors.append(point)
+        if point.y < dims_xy[0] - 1:
+            point.x = point.x + 1
+            neighbors.append(point)
+        if point.y > 0:
+            point.y = point.y - 1
+            neighbors.append(point)
+        if point.y < dims_xy[1] - 1:
+            point.y = point.y + 1
+            neighbors.append(point)
+    else:
+        if point[0] > 0:
+            neighbors.append([point[0] - 1, point[1]])
+        if point[0] < dims_xy[0] - 1:
+            neighbors.append([point[0] + 1, point[1]])
+        if point[1] > 0:
+            neighbors.append([point[0], point[1] - 1])
+        if point[1] < dims_xy[1] - 1:
+            neighbors.append([point[0], point[1] + 1])
     return neighbors
 
 # Returns distance between two points - useful heuristic for informed search
@@ -169,30 +184,30 @@ def A_star(grid, start_pos, end_pos):
     unchecked = [start]
     current = start
     checked = []
-    while(not len(unchecked)==0):
+    while not len(unchecked)==0:
         #TODO: add sort
         current = unchecked[0]
         if current.x == end.x and current.y == end.y:
             break
         unchecked.remove(current)
         checked.append(current)
-        #TODO: update the get_neighbors function for the class
-        for neighbour in get_neighbors(grid,[current.x,current.y]):
+        for neighbour in get_neighbors(grid,current):
             if neighbour in checked:
                 #if checked
                 continue
             tempG = current.g+1
             #1 as the cost of moving one grid
-            else if neighbour not in unchecked or tempG < neighbour.g:
+            else if (neighbour not in unchecked) or (tempG < neighbour.g):
                 #it has not entered the unchecked yet, or we just found a path of lower cost
                 neighbour.g = tempG
                 #update the current cost
                 neighbour.h = get_dist([neighbour.x,neighbour.y],[end.x,end.y])
+                neighbour.cost()
                 unchecked.append(neighbour)
         #checked all unchecked list
     #should have searched the whole map and reached the end point here.
     #now trace back to the starting position and out put the points in the path
-    while(not current.parent == None):
+    while not current.parent == None:
         path.append(current)
         current=current.parent
     return path
