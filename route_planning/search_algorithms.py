@@ -197,7 +197,8 @@ def A_star(grid, start_pos, end_pos):
                 continue
             tempG = current.g+1
             #1 as the cost of moving one grid
-            else if (neighbour not in unchecked) or (tempG < neighbour.g):
+            if neighbour not in unchecked or tempG < neighbour.g:
+                neighbour.parent = current
                 #it has not entered the unchecked yet, or we just found a path of lower cost
                 neighbour.g = tempG
                 #update the current cost
