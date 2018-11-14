@@ -169,7 +169,7 @@ def A_star(grid, start_pos, end_pos):
     unchecked = [start]
     current = start
     checked = []
-    while(not len(unchecked)==0):
+    while(not len(unchecked)==0):w
         #TODO: add sort
         current = unchecked[0]
         if current.x == end.x and current.y == end.y:
@@ -179,13 +179,19 @@ def A_star(grid, start_pos, end_pos):
         #TODO: update the get_neighbors function for the class
         for neighbour in get_neighbors(grid,[current.x,current.y]):
             if neighbour in checked:
+                #if checked
                 continue
-            tempG = ++current.g
-            if neighbour not in unchecked or tempG < neighbour.g:
-                unchecked.append(neighbour)
+            tempG = current.g+1
+            #1 as the cost of moving one grid
+            else if neighbour not in unchecked or tempG < neighbour.g:
+                #it has not entered the unchecked yet, or we just found a path of lower cost
                 neighbour.g = tempG
+                #update the current cost
                 neighbour.h = get_dist([neighbour.x,neighbour.y],[end.x,end.y])
-
+                unchecked.append(neighbour)
+        #checked all unchecked list
+    #should have searched the whole map and reached the end point here.
+    #now trace back to the starting position and out put the points in the path
     while(not current.parent == None):
         path.append(current)
         current=current.parent
