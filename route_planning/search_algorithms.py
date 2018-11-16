@@ -185,19 +185,16 @@ def A_star(grid, start_pos, end_pos):
     current = start
     checked = []
     while not len(unchecked)==0:
-        #TODO: add sort
+        unchecked = sorted(unchecked, key=lambda x: x.f)
         current = unchecked[0]
         if current.x == end.x and current.y == end.y:
             break
         unchecked.remove(current)
         checked.append(current)
         for neighbour in get_neighbors(grid,current):
-            if neighbour in checked:
-                #if checked
-                continue
             tempG = current.g+1
             #1 as the cost of moving one grid
-            if neighbour not in unchecked or tempG < neighbour.g:
+            if ((not neighbour in checked) and (neighbour not in unchecked or tempG < neighbour.g) and (not grid[neighbour.x][neighbour.y] is 1)):
                 neighbour.parent = current
                 #it has not entered the unchecked yet, or we just found a path of lower cost
                 neighbour.g = tempG
