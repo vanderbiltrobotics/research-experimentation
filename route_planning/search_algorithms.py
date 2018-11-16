@@ -21,6 +21,7 @@
 # Import required packages
 import numpy as np
 import inspect
+import copy
 from collections import deque
 from operator import itemgetter
 from math import *
@@ -56,26 +57,30 @@ def get_neighbors(dims, point):
     neighbors = []
     if isinstance(point, Point):
         if point.x > 0:
-            point.x = point.x - 1
-            neighbors.append(point)
-        if point.y < dims_xy[0] - 1:
-            point.x = point.x + 1
-            neighbors.append(point)
+            point1 = copy.copy(point)
+            point1.x = point.x - 1
+            neighbors.append(point1)
+        if point.x < dims_xy[0] - 1:
+            point2 = copy.copy(point)
+            point2.x = point.x + 1
+            neighbors.append(point2)
         if point.y > 0:
-            point.y = point.y - 1
-            neighbors.append(point)
+            point3 = copy.copy(point)
+            point3.y = point.y - 1
+            neighbors.append(point3)
         if point.y < dims_xy[1] - 1:
-            point.y = point.y + 1
-            neighbors.append(point)
-    else:
-        if point[0] > 0:
-            neighbors.append([point[0] - 1, point[1]])
-        if point[0] < dims_xy[0] - 1:
-            neighbors.append([point[0] + 1, point[1]])
-        if point[1] > 0:
-            neighbors.append([point[0], point[1] - 1])
-        if point[1] < dims_xy[1] - 1:
-            neighbors.append([point[0], point[1] + 1])
+            point4 = copy.copy(point)
+            point4.y = point.y + 1
+            neighbors.append(point4)
+#    else:
+   #     if point[0] > 0:
+   #         neighbors.append([point[0] - 1, point[1]])
+   #     if point[0] < dims_xy[0] - 1:
+   #         neighbors.append([point[0] + 1, point[1]])
+   #     if point[1] > 0:
+  #          neighbors.append([point[0], point[1] - 1])
+ #       if point[1] < dims_xy[1] - 1:
+#            neighbors.append([point[0], point[1] + 1])
     return neighbors
 
 # Returns distance between two points - useful heuristic for informed search
@@ -179,6 +184,7 @@ def greedy_bfs(grid, start_pos, end_pos):
 # A star search algorithm for path planning
 def A_star(grid, start_pos, end_pos):
     path = []
+    OBSTACLE = 1
     start = Point(None, start_pos)
     end = Point(None, end_pos)
     unchecked = [start]
@@ -189,19 +195,23 @@ def A_star(grid, start_pos, end_pos):
         current = unchecked[0]
         if current.x == end.x and current.y == end.y:
             break
+
         unchecked.remove(current)
         checked.append(current)
-        for neighbour in get_neighbors(grid,current):
-            tempG = current.g+1
+        temp = copy.copy(current)
+        list=get_neighbors([576,369],temp)
+        for neighbour in list:
+            tempG = temp.g+1
             #1 as the cost of moving one grid
-            if ((not neighbour in checked) and (neighbour not in unchecked or tempG < neighbour.g) and (not grid[neighbour.x][neighbour.y] is 1)):
-                neighbour.parent = current
+            if ((not neighbour in checked) and (neighbour not in unchecked or tempG < neighbour.g)):
+                neighbour.parent = temp
                 #it has not entered the unchecked yet, or we just found a path of lower cost
                 neighbour.g = tempG
                 #update the current cost
-                neighbour.h = get_dist([neighbour.x,neighbour.y],[end.x,end.y])
+                neighbour.h = 100*get_dist([neighbour.x,neighbour.y],[end.x,end.y])
                 neighbour.cost()
                 unchecked.append(neighbour)
+
         #checked all unchecked list
     #should have searched the whole map and reached the end point here.
     #now trace back to the starting position and out put the points in the path

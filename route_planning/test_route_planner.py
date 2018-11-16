@@ -13,7 +13,7 @@ my_grid = GridWorld(map_type="RMC")
 my_grid.show_image()
 
 # Test each algorithm
-my_grid.test_search_algo(greedy_bfs)
+my_grid.test_search_algo(A_star)
 
 
 
