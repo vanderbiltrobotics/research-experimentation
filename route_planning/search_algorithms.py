@@ -55,32 +55,32 @@ class Point:
 def get_neighbors(dims, point):
     dims_xy = [dims[1], dims[0]]  # Order dimensions this way to avoid confusion
     neighbors = []
-    if isinstance(point, Point):
-        if point.x > 0:
-            point1 = copy.copy(point)
-            point1.x = point.x - 1
-            neighbors.append(point1)
-        if point.x < dims_xy[0] - 1:
-            point2 = copy.copy(point)
-            point2.x = point.x + 1
-            neighbors.append(point2)
-        if point.y > 0:
-            point3 = copy.copy(point)
-            point3.y = point.y - 1
-            neighbors.append(point3)
-        if point.y < dims_xy[1] - 1:
-            point4 = copy.copy(point)
-            point4.y = point.y + 1
-            neighbors.append(point4)
-#    else:
-   #     if point[0] > 0:
-   #         neighbors.append([point[0] - 1, point[1]])
-   #     if point[0] < dims_xy[0] - 1:
-   #         neighbors.append([point[0] + 1, point[1]])
-   #     if point[1] > 0:
-  #          neighbors.append([point[0], point[1] - 1])
- #       if point[1] < dims_xy[1] - 1:
-#            neighbors.append([point[0], point[1] + 1])
+    # if isinstance(point, Point):
+    #     if point.x > 0:
+    #         point1 = copy.copy(point)
+    #         point1.x = point.x - 1
+    #         neighbors.append(point1)
+    #     if point.x < dims_xy[0] - 1:
+    #         point2 = copy.copy(point)
+    #         point2.x = point.x + 1
+    #         neighbors.append(point2)
+    #     if point.y > 0:
+    #         point3 = copy.copy(point)
+    #         point3.y = point.y - 1
+    #         neighbors.append(point3)
+    #     if point.y < dims_xy[1] - 1:
+    #         point4 = copy.copy(point)
+    #         point4.y = point.y + 1
+    #         neighbors.append(point4)
+    # else:
+    if point[0] > 0:
+       neighbors.append([point[0] - 1, point[1]])
+    if point[0] < dims_xy[0] - 1:
+       neighbors.append([point[0] + 1, point[1]])
+    if point[1] > 0:
+       neighbors.append([point[0], point[1] - 1])
+    if point[1] < dims_xy[1] - 1:
+       neighbors.append([point[0], point[1] + 1])
     return neighbors
 
 # Returns distance between two points - useful heuristic for informed search
@@ -182,43 +182,74 @@ def greedy_bfs(grid, start_pos, end_pos):
 
 
 # A star search algorithm for path planning
-def A_star(grid, start_pos, end_pos):
-    path = []
-    OBSTACLE = 1
-    start = Point(None, start_pos)
-    end = Point(None, end_pos)
-    unchecked = [start]
-    current = start
-    checked = []
-    while not len(unchecked)==0:
-        unchecked = sorted(unchecked, key=lambda x: x.f)
-        current = unchecked[0]
-        if current.x == end.x and current.y == end.y:
-            break
-
-        unchecked.remove(current)
-        checked.append(current)
-        temp = copy.copy(current)
-        list=get_neighbors([576,369],temp)
-        for neighbour in list:
-            tempG = temp.g+1
-            #1 as the cost of moving one grid
-            if ((not neighbour in checked) and (neighbour not in unchecked or tempG < neighbour.g)):
-                neighbour.parent = temp
-                #it has not entered the unchecked yet, or we just found a path of lower cost
-                neighbour.g = tempG
-                #update the current cost
-                neighbour.h = 100*get_dist([neighbour.x,neighbour.y],[end.x,end.y])
-                neighbour.cost()
-                unchecked.append(neighbour)
-
-        #checked all unchecked list
-    #should have searched the whole map and reached the end point here.
-    #now trace back to the starting position and out put the points in the path
-    while not current.parent == None:
-        path.append(current)
-        current=current.parent
-    return path
+def A_star(grid, start, end):
+    # path = []
+    # OBSTACLE = 1
+    # start = Point(None, start_pos)
+    # end = Point(None, end_pos)
+    # unchecked = [start]
+    # current = start
+    # checked = []
+    # while not len(unchecked)==0:
+    #     unchecked = sorted(unchecked, key=lambda x: x.f)
+    #     current = unchecked[0]
+    #     if current.x == end.x and current.y == end.y:
+    #         break
+    #
+    #     unchecked.remove(current)
+    #     checked.append(current)
+    #     temp = copy.copy(current)
+    #     list=get_neighbors([576,369],temp)
+    #     for neighbour in list:
+    #         tempG = temp.g+1
+    #         #1 as the cost of moving one grid
+    #         if ((not neighbour in checked) and (neighbour not in unchecked or tempG < neighbour.g)):
+    #             neighbour.parent = temp
+    #             #it has not entered the unchecked yet, or we just found a path of lower cost
+    #             neighbour.g = tempG
+    #             #update the current cost
+    #             neighbour.h = 100*get_dist([neighbour.x,neighbour.y],[end.x,end.y])
+    #             neighbour.cost()
+    #             unchecked.append(neighbour)
+    #
+    #     #checked all unchecked list
+    # #should have searched the whole map and reached the end point here.
+    # #now trace back to the starting position and out put the points in the path
+    # while not current.parent == None:
+    #     path.append(current)
+    #     current=current.parent
+    # return path
+    openList = [start]
+    closedList = []
+    cameFrom = {}
+    gScore = {}
+    fScore = {}
+    gScore[(start[0],start[1])] = 0
+    fScore[(start[0],start[1])] = 0 + get_dist(start, end)
+    while len(openList) != 0:
+        current = sorted(openList)[0]
+        if current is end:
+            path = [current]
+            while len(cameFrom) != 0:
+                temp = []
+                (temp[0], temp[1]) = (cameFrom.pop((current[0], current[1])))
+                path.append(temp)
+                current = temp
+            return path
+        openList.remove(current)
+        closedList.append(current)
+        neighbors = get_neighbors([576, 369], current)
+        for neighbor in neighbors:
+            tempG = gScore[(current[0],current[1])] + 1 + get_dist(current, neighbor)
+            if ((neighbor[0],neighbor[1]) in closedList) and (tempG >= gScore[(neighbor[0],neighbor[1])]):
+                continue
+            if (neighbor[0],neighbor[1]) not in closedList or tempG < gScore[(neighbor[0],neighbor[1])]:
+                cameFrom[(neighbor[0],neighbor[1])] = current
+                gScore[(neighbor[0],neighbor[1])] = tempG + 1
+                fScore[(neighbor[0],neighbor[1])] = gScore[(neighbor[0],neighbor[1])] + get_dist(neighbor, end)
+                if neighbor not in openList:
+                    openList.append((neighbor[0],neighbor[1]))
+    return 0
 
 # Theta star search algorithm for path planning - any angle extension of A star
 def theta_star(grid, start_pos, end_pos):
