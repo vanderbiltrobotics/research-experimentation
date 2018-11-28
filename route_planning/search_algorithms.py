@@ -20,6 +20,7 @@
 
 # Import required packages
 import numpy as np
+import matplotlib.pyplot as plt
 import inspect
 import copy
 from collections import deque
@@ -85,7 +86,7 @@ def get_neighbors(dims, point):
 
 # Returns distance between two points - useful heuristic for informed search
 def get_dist(p1, p2):
-    return sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[0])**2)
+    return sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 
 #####################
@@ -219,36 +220,32 @@ def A_star(grid, start, end):
     #     path.append(current)
     #     current=current.parent
     # return path
-    openList = [start]
-    closedList = []
+    openList = [start] #list of points we plan to go to
+    closedList = []    #lit of points already we have been to
     cameFrom = {}
     gScore = {}
     fScore = {}
     gScore[(start[0],start[1])] = 0
     fScore[(start[0],start[1])] = 0 + get_dist(start, end)
     while len(openList) != 0:
-        current = sorted(openList)[0]
+        openList = sorted(openList)
+        current = openList[0]
         if current is end:
-            path = [current]
-            while len(cameFrom) != 0:
-                temp = []
-                (temp[0], temp[1]) = (cameFrom.pop((current[0], current[1])))
-                path.append(temp)
-                current = temp
-            return path
+            return cameFrom
         openList.remove(current)
         closedList.append(current)
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
             tempG = gScore[(current[0],current[1])] + 1 + get_dist(current, neighbor)
-            if ((neighbor[0],neighbor[1]) in closedList) and (tempG >= gScore[(neighbor[0],neighbor[1])]):
+            if (neighbor in closedList) and (tempG >= gScore[(neighbor[0],neighbor[1])]):
                 continue
-            if (neighbor[0],neighbor[1]) not in closedList or tempG < gScore[(neighbor[0],neighbor[1])]:
-                cameFrom[(neighbor[0],neighbor[1])] = current
-                gScore[(neighbor[0],neighbor[1])] = tempG + 1
-                fScore[(neighbor[0],neighbor[1])] = gScore[(neighbor[0],neighbor[1])] + get_dist(neighbor, end)
+            if neighbor not in closedList or tempG < gScore[(neighbor[0], neighbor[1])]:
+                cameFrom[(neighbor[0], neighbor[1])] = current
+                gScore[(neighbor[0], neighbor[1])] = tempG + 1
+                fScore[(neighbor[0], neighbor[1])] = gScore[(neighbor[0],neighbor[1])] + get_dist(neighbor, end)
                 if neighbor not in openList:
-                    openList.append((neighbor[0],neighbor[1]))
+                    openList.append(neighbor)
+
     return 0
 
 # Theta star search algorithm for path planning - any angle extension of A star
