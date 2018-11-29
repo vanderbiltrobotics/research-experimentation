@@ -220,32 +220,29 @@ def A_star(grid, start, end):
     #     path.append(current)
     #     current=current.parent
     # return path
-    openList = [start] #list of points we plan to go to
-    closedList = []    #lit of points already we have been to
+    openList = []
+    openList.append(([start], get_dist(start, end)))
+    closedList = []
     cameFrom = {}
+    cameFrom[(start[0], start[1])] = None
     gScore = {}
-    fScore = {}
-    gScore[(start[0],start[1])] = 0
-    fScore[(start[0],start[1])] = 0 + get_dist(start, end)
-    while len(openList) != 0:
-        openList = sorted(openList)
-        current = openList[0]
+    gScore[(start[0], start[1])] = 0
+    while not (len(openList) is 0):
+        openList = sorted(openList,key=lambda x: x[1])
+        current = openList.pop(0)
+        closedList.append(current)
+        current = current[0]
         if current is end:
             return cameFrom
-        openList.remove(current)
-        closedList.append(current)
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
-            tempG = gScore[(current[0],current[1])] + 1 + get_dist(current, neighbor)
-            if (neighbor in closedList) and (tempG >= gScore[(neighbor[0],neighbor[1])]):
+            tempG = gScore[(current[0], current[1])] + 1 + get_dist(current, neighbor)
+            if (neighbor in closedList) and (tempG >= gScore[(neighbor[0], neighbor[1])]):
                 continue
-            if neighbor not in closedList or tempG < gScore[(neighbor[0], neighbor[1])]:
+            if not (neighbor in closedList) or (tempG < gScore[(neighbor[0], neighbor[1])]):
                 cameFrom[(neighbor[0], neighbor[1])] = current
-                gScore[(neighbor[0], neighbor[1])] = tempG + 1
-                fScore[(neighbor[0], neighbor[1])] = gScore[(neighbor[0],neighbor[1])] + get_dist(neighbor, end)
-                if neighbor not in openList:
-                    openList.append(neighbor)
-
+                gScore[(neighbor[0], neighbor[1])] = tempG
+                openList.append((neighbor, gScore[(neighbor[0], neighbor[1])] + get_dist(neighbor, end)))
     return 0
 
 # Theta star search algorithm for path planning - any angle extension of A star
