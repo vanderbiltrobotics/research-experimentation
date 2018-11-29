@@ -229,9 +229,9 @@ def A_star(grid, start, end):
     gScore[(start[0], start[1])] = 0
     while not (len(openList) is 0):
         openList = sorted(openList,key=lambda x: x[1])
-        current = openList.pop(0)
-        closedList.append(current)
-        current = current[0]
+        curr = openList.pop(0)
+        closedList.append(curr)
+        current = curr[0]
         if current is end:
             return cameFrom
         neighbors = get_neighbors([576, 369], current)
