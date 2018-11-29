@@ -231,7 +231,7 @@ def A_star(grid, start, end):
         openList = sorted(openList,key=lambda x: x[1])
         curr = openList.pop(0)
         closedList.append(curr)
-        current = curr[0]
+        current = curr[0][0]
         if current is end:
             return cameFrom
         neighbors = get_neighbors([576, 369], current)
