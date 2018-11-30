@@ -88,6 +88,12 @@ def get_neighbors(dims, point):
 def get_dist(p1, p2):
     return sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
+def construct(cameFrom, path, c):
+    if not(cameFrom[(c[0],c[1])] is None):
+        path.append(c)
+        c = cameFrom[(c[0],c[1])]
+        construct(cameFrom,path,c)
+
 
 #####################
 # SEARCH ALGORITHMS #
@@ -237,7 +243,8 @@ def A_star(grid, start, end):
         #get the coordinate
         current = curr[0]
         if (current[0] == end[0]) and (current[1] == end[1]):
-            return cameFrom  #TODO: write a recursion to track the path
+            path = []
+            return construct(cameFrom,path, current)
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
             #gscore for the neighbor we are considering, parent_gscore+1
