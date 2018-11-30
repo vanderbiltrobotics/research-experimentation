@@ -220,29 +220,39 @@ def A_star(grid, start, end):
     #     path.append(current)
     #     current=current.parent
     # return path
-    openList = []
-    openList.append(([start], get_dist(start, end)))
+    openList = [] #in form of (point_coordinates, f_score)
+    openList.append((start, get_dist(start, end)))
     closedList = []
-    cameFrom = {}
+    cameFrom = {}#dictionary in form of point_coordinates:parent coordinate
     cameFrom[(start[0], start[1])] = None
-    gScore = {}
+    gScore = {}#dictionary key:coordinate,item:gscore
     gScore[(start[0], start[1])] = 0
+    #while have item on the plan
     while not (len(openList) is 0):
+        #get the most efficient next step to go, sort by f
         openList = sorted(openList,key=lambda x: x[1])
         curr = openList.pop(0)
         closedList.append(curr)
-        current = curr[0][0]
-        if current is end:
-            return cameFrom
+        print curr
+        #get the coordinate
+        current = curr[0]
+        if (current[0] == end[0]) and (current[1] == end[1]):
+            return cameFrom  #TODO: write a recursion to track the path
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
-            tempG = gScore[(current[0], current[1])] + 1 + get_dist(current, neighbor)
-            if (neighbor in closedList) and (tempG >= gScore[(neighbor[0], neighbor[1])]):
+            #gscore for the neighbor we are considering, parent_gscore+1
+            tempG = gScore[(current[0], current[1])] + get_dist(current, neighbor)
+            #if the neighbor point has already been visited, distance is always the same, only comparing steps taken(g)
+            #if this path is not as effecient, continue, skip this
+            if (neighbor in [item[0] for item in closedList]) and (tempG >= gScore[(neighbor[0], neighbor[1])]):
                 continue
-            if not (neighbor in closedList) or (tempG < gScore[(neighbor[0], neighbor[1])]):
+            #if this is a new point, or this is a more efficient path
+            if (not (neighbor in [item[0] for item in closedList])) or (tempG < gScore[(neighbor[0], neighbor[1])]):
+                #update path to get neighbor
                 cameFrom[(neighbor[0], neighbor[1])] = current
                 gScore[(neighbor[0], neighbor[1])] = tempG
-                openList.append((neighbor, gScore[(neighbor[0], neighbor[1])] + get_dist(neighbor, end)))
+                #append neighbot to the plan
+                openList.append((neighbor, gScore[(neighbor[0], neighbor[1])] + 1000*get_dist(neighbor, end)))
     return 0
 
 # Theta star search algorithm for path planning - any angle extension of A star
