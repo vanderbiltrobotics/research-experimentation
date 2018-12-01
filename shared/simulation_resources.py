@@ -13,6 +13,7 @@ from datetime import datetime
 # as a black and white image or to display a path overlayed on the grid
 # ----------------------------------------------------------------------------
 
+
 class GridWorld:
 
     # Randomly generates a new GridWorld with specified parameters
@@ -141,3 +142,16 @@ class GridWorld:
         # Display resulting path
         if display_results:
             self.show_path(start_pos, end_pos, path_points)
+
+
+# ----------------------------------------------------------------------------
+# Robot class
+# ----------------------------------------------------------------------------
+# Represents a world using a 2D grid. Every position in the world is either
+# empty (0) or contains an obstacle (1). Contains methods to display the world
+# as a black and white image or to display a path overlayed on the grid
+# ----------------------------------------------------------------------------
+
+class Robot:
+
+    def __init__(self):
