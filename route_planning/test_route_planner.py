@@ -11,8 +11,8 @@ from shared.simulation_resources import *
 # Generate a random GridWorld
 my_grid = GridWorld(map_type="RMC")
 
-# Test algorithm
-my_grid.test_search_algo(greedy_bfs)
+# Test each algorithm
+my_grid.test_search_algo(A_star)
 
 
 

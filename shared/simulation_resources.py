@@ -151,7 +151,3 @@ class GridWorld:
 # empty (0) or contains an obstacle (1). Contains methods to display the world
 # as a black and white image or to display a path overlayed on the grid
 # ----------------------------------------------------------------------------
-
-class Robot:
-
-    def __init__(self):
