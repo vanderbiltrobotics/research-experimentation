@@ -58,7 +58,25 @@ def construct(cameFrom, path, c):
 
 
 def lineofsight(parent, neighbor):
-    return False
+    yp = parent[1]
+    xp = parent[0]
+    yn = neighbor[1]
+    xn = neighbor[0]
+    dy = yn - yp
+    dx = xn - xp
+    sy = -1 if dy < 0 else 1
+    sx = -1 if dx < 0 else 1
+    dy *= sy
+    dx *= sx
+    f = 0
+    if dx >= dy:
+        while xp != xn:
+            f += dy
+    else:
+        while yp != yn:
+            f += dx
+
+    return True
 
 #####################
 # SEARCH ALGORITHMS #
