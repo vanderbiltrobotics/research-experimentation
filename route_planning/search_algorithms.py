@@ -57,6 +57,9 @@ def construct(cameFrom, path, c):
         construct(cameFrom,path,c)
 
 
+def lineofsight(parent, neighbor):
+    return False
+
 #####################
 # SEARCH ALGORITHMS #
 #####################
@@ -199,11 +202,12 @@ def theta_star(grid, start_pos, end_pos):
     gScore = {}
     gScore[(start_pos[0],start_pos[1])] = 0
     while not(len(openList) == 0):
+        #TODO hScore integration
         openList = sorted(openList, key=lambda x: x[1])
         curr = openList.pop(0)
         closedList.append(curr)
         curr = curr[0]
-        if(curr[0]==end_pos[0]) and (curr[1] and end_pos[1]):
+        if(curr[0]==end_pos[0]) and (curr[1]==end_pos[1]):
             path = []
             construct(cameFrom,path,curr)
             return path
@@ -212,7 +216,14 @@ def theta_star(grid, start_pos, end_pos):
             if (not(neighbor in [item[0] for item in closedList]) or (tempG < gScore[((neighbor[0], neighbor[1]))])):
                 cameFrom[(neighbor[0], neighbor[1])] = curr
                 gScore[(neighbor[0], neighbor[1])] = tempG
-                if(not(neighbor in [item[0] for item in openList])):
-                    openList.append((neighbor, gScore[(neighbor[0], neighbor[1]) + 100*get_dist(neighbor, end_pos)]))
-                #updatevertex to line of sight
+                openList.append((neighbor, gScore[(neighbor[0], neighbor[1]) + 100*get_dist(neighbor, end_pos)]))
+                #TODO write lineofsight()
+                parent = cameFrom[(curr[0], curr[1])]
+                tempG = gScore[(parent[0], parent[1])] + get_dist(parent, neighbor)
+                if lineofsight(parent, neighbor):
+                    if(tempG < gScore[(neighbor[0], neighbor[1])]):
+                        cameFrom[(neighbor[0], neighbor[1])] = parent
+                        gScore[(neighbor[0], neighbor[1])] = tempG
+                        openList.append((neighbor, tempG + get_dist(neighbor, end_pos)))
+
     return None
