@@ -173,19 +173,20 @@ def A_star(grid, start, end):
             return path
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
-            #gscore for the neighbor we are considering, parent_gscore+1
-            tempG = gScore[(current[0], current[1])] + get_dist(current, neighbor)
-            #if the neighbor point has already been visited, distance is always the same, only comparing steps taken(g)
-            #if this path is not as effecient, continue, skip this
-            if (neighbor in [item[0] for item in closedList]) and (tempG >= gScore[(neighbor[0], neighbor[1])]) and (grid[neighbor[1]][neighbor[0]] == 1):
-                continue
-            #if this is a new point, or this is a more efficient path
-            if (not (neighbor in [item[0] for item in closedList])) or (tempG < gScore[(neighbor[0], neighbor[1])]):
-                #update path to get neighbor
-                cameFrom[(neighbor[0], neighbor[1])] = current
-                gScore[(neighbor[0], neighbor[1])] = tempG
-                #append neighbot to the plan
-                openList.append((neighbor, gScore[(neighbor[0], neighbor[1])] + 1000*get_dist(neighbor, end)))
+            if grid[neighbor[1], neighbor[0]] != 1:
+                #gscore for the neighbor we are considering, parent_gscore+1
+                tempG = gScore[(current[0], current[1])] + get_dist(current, neighbor)
+                #if the neighbor point has already been visited, distance is always the same, only comparing steps taken(g)
+                #if this path is not as effecient, continue, skip this
+                if (neighbor in [item[0] for item in closedList]) and (tempG >= gScore[(neighbor[0], neighbor[1])]):
+                    continue
+                #if this is a new point, or this is a more efficient path
+                if (not (neighbor in [item[0] for item in closedList])) or (tempG < gScore[(neighbor[0], neighbor[1])]):
+                    #update path to get neighbor
+                    cameFrom[(neighbor[0], neighbor[1])] = current
+                    gScore[(neighbor[0], neighbor[1])] = tempG
+                    #append neighbot to the plan
+                    openList.append((neighbor, gScore[(neighbor[0], neighbor[1])] + 1000*get_dist(neighbor, end)))
     return 0
 
 # Theta star search algorithm for path planning - any angle extension of A star
