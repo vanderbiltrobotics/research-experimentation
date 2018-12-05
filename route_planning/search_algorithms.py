@@ -191,5 +191,28 @@ def A_star(grid, start, end):
 
 # Theta star search algorithm for path planning - any angle extension of A star
 def theta_star(grid, start_pos, end_pos):
-    path = []
-    return path
+    openList = []
+    openList.append((start_pos, get_dist(start_pos, end_pos)))
+    closedList = []
+    cameFrom = {}
+    cameFrom[(start_pos[0],start_pos[1])] = None
+    gScore = {}
+    gScore[(start_pos[0],start_pos[1])] = 0
+    while not(len(openList) == 0):
+        openList = sorted(openList, key=lambda x: x[1])
+        curr = openList.pop(0)
+        closedList.append(curr)
+        curr = curr[0]
+        if(curr[0]==end_pos[0]) and (curr[1] and end_pos[1]):
+            path = []
+            construct(cameFrom,path,curr)
+            return path
+        for neighbor in get_neighbors([576, 369], curr):
+            tempG = gScore[(neighbor[0], neighbor[1])] + get_dist(curr, neighbor)
+            if (not(neighbor in [item[0] for item in closedList]) or (tempG < gScore[((neighbor[0], neighbor[1]))])):
+                cameFrom[(neighbor[0], neighbor[1])] = curr
+                gScore[(neighbor[0], neighbor[1])] = tempG
+                if(not(neighbor in [item[0] for item in openList])):
+                    openList.append((neighbor, gScore[(neighbor[0], neighbor[1]) + 100*get_dist(neighbor, end_pos)]))
+                #updatevertex to line of sight
+    return None
