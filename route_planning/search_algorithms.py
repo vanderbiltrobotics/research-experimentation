@@ -28,26 +28,6 @@ from operator import itemgetter
 from math import *
 
 #####################
-# CLASSES           #
-#####################
-
-class Point:
-
-    def __init__(self, parent=None, position=None):
-        self.parent = parent
-        self.x = position[0]
-        self.y = position[1]
-        self.g = 0
-        self.h = 0
-        self.f = self.g+self.h
-
-    def cost(self):
-        self.f = self.g+self.h
-        return self.f
-
-
-
-#####################
 # HELPER FUNCTIONS #
 #####################
 
@@ -56,24 +36,6 @@ class Point:
 def get_neighbors(dims, point):
     dims_xy = [dims[1], dims[0]]  # Order dimensions this way to avoid confusion
     neighbors = []
-    # if isinstance(point, Point):
-    #     if point.x > 0:
-    #         point1 = copy.copy(point)
-    #         point1.x = point.x - 1
-    #         neighbors.append(point1)
-    #     if point.x < dims_xy[0] - 1:
-    #         point2 = copy.copy(point)
-    #         point2.x = point.x + 1
-    #         neighbors.append(point2)
-    #     if point.y > 0:
-    #         point3 = copy.copy(point)
-    #         point3.y = point.y - 1
-    #         neighbors.append(point3)
-    #     if point.y < dims_xy[1] - 1:
-    #         point4 = copy.copy(point)
-    #         point4.y = point.y + 1
-    #         neighbors.append(point4)
-    # else:
     if point[0] > 0:
        neighbors.append([point[0] - 1, point[1]])
     if point[0] < dims_xy[0] - 1:
@@ -93,6 +55,8 @@ def construct(cameFrom, path, c):
         path.append(c)
         c = cameFrom[(c[0],c[1])]
         construct(cameFrom,path,c)
+    else:
+        return path
 
 
 #####################
@@ -190,42 +154,6 @@ def greedy_bfs(grid, start_pos, end_pos):
 
 # A star search algorithm for path planning
 def A_star(grid, start, end):
-    # path = []
-    # OBSTACLE = 1
-    # start = Point(None, start_pos)
-    # end = Point(None, end_pos)
-    # unchecked = [start]
-    # current = start
-    # checked = []
-    # while not len(unchecked)==0:
-    #     unchecked = sorted(unchecked, key=lambda x: x.f)
-    #     current = unchecked[0]
-    #     if current.x == end.x and current.y == end.y:
-    #         break
-    #
-    #     unchecked.remove(current)
-    #     checked.append(current)
-    #     temp = copy.copy(current)
-    #     list=get_neighbors([576,369],temp)
-    #     for neighbour in list:
-    #         tempG = temp.g+1
-    #         #1 as the cost of moving one grid
-    #         if ((not neighbour in checked) and (neighbour not in unchecked or tempG < neighbour.g)):
-    #             neighbour.parent = temp
-    #             #it has not entered the unchecked yet, or we just found a path of lower cost
-    #             neighbour.g = tempG
-    #             #update the current cost
-    #             neighbour.h = 100*get_dist([neighbour.x,neighbour.y],[end.x,end.y])
-    #             neighbour.cost()
-    #             unchecked.append(neighbour)
-    #
-    #     #checked all unchecked list
-    # #should have searched the whole map and reached the end point here.
-    # #now trace back to the starting position and out put the points in the path
-    # while not current.parent == None:
-    #     path.append(current)
-    #     current=current.parent
-    # return path
     openList = [] #in form of (point_coordinates, f_score)
     openList.append((start, get_dist(start, end)))
     closedList = []
@@ -239,12 +167,13 @@ def A_star(grid, start, end):
         openList = sorted(openList,key=lambda x: x[1])
         curr = openList.pop(0)
         closedList.append(curr)
-        print curr
         #get the coordinate
         current = curr[0]
         if (current[0] == end[0]) and (current[1] == end[1]):
             path = []
-            return construct(cameFrom,path, current)
+            path = construct(cameFrom,path,current)
+            print path
+            return path
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
             #gscore for the neighbor we are considering, parent_gscore+1
