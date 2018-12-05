@@ -55,8 +55,6 @@ def construct(cameFrom, path, c):
         path.append(c)
         c = cameFrom[(c[0],c[1])]
         construct(cameFrom,path,c)
-    else:
-        return path
 
 
 #####################
@@ -171,8 +169,7 @@ def A_star(grid, start, end):
         current = curr[0]
         if (current[0] == end[0]) and (current[1] == end[1]):
             path = []
-            path = construct(cameFrom,path,current)
-            print path
+            construct(cameFrom,path,current)
             return path
         neighbors = get_neighbors([576, 369], current)
         for neighbor in neighbors:
@@ -180,7 +177,7 @@ def A_star(grid, start, end):
             tempG = gScore[(current[0], current[1])] + get_dist(current, neighbor)
             #if the neighbor point has already been visited, distance is always the same, only comparing steps taken(g)
             #if this path is not as effecient, continue, skip this
-            if (neighbor in [item[0] for item in closedList]) and (tempG >= gScore[(neighbor[0], neighbor[1])]):
+            if (neighbor in [item[0] for item in closedList]) and (tempG >= gScore[(neighbor[0], neighbor[1])]) and (grid[neighbor[1]][neighbor[0]] == 1):
                 continue
             #if this is a new point, or this is a more efficient path
             if (not (neighbor in [item[0] for item in closedList])) or (tempG < gScore[(neighbor[0], neighbor[1])]):
