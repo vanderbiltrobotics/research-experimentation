@@ -12,7 +12,4 @@ from shared.simulation_resources import *
 my_grid = GridWorld(map_type="RMC")
 
 # Test each algorithm
-my_grid.test_search_algo(A_star)
-
-
-
+my_grid.test_search_algo(theta_star)

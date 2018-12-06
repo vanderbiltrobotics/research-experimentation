@@ -57,7 +57,7 @@ def construct(cameFrom, path, c):
         construct(cameFrom,path,c)
 
 
-def lineofsight(parent, neighbor):
+def lineofsight(parent, neighbor, grid):
     yp = parent[1]
     xp = parent[0]
     yn = neighbor[1]
@@ -72,10 +72,29 @@ def lineofsight(parent, neighbor):
     if dx >= dy:
         while xp != xn:
             f += dy
+            if f>= dx:
+                if grid[yp+((sy-1)/2),xp+((sx-1)/2)]:
+                    return False
+                yp += sy
+                f -= dx
+            if not f and grid[yp+((sy-1)/2),xp+((sx-1)/2)]:
+                return False
+            if not dy and grid[yp,xp+((sx-1)/2)] and grid[yp-1,xp+((sx-1)/2)]:
+                return False
+            xp += sx
     else:
         while yp != yn:
             f += dx
-
+            if f>=dy:
+                if grid[yp+((sy-1)/2),xp+((sx-1)/2)]:
+                    return  False
+                xp += sx
+                f -= dy
+            if not f and grid[yp+((sy-1)/2),xp+((sx-1)/2)]:
+                return False
+            if not dx and grid[yp+((sy-1)/2),xp] and grid[yp+((sy-1)/2),xp-1]:
+                return False
+            yp+=sy
     return True
 
 #####################
@@ -230,18 +249,17 @@ def theta_star(grid, start_pos, end_pos):
             construct(cameFrom,path,curr)
             return path
         for neighbor in get_neighbors([576, 369], curr):
-            tempG = gScore[(neighbor[0], neighbor[1])] + get_dist(curr, neighbor)
-            if (not(neighbor in [item[0] for item in closedList]) or (tempG < gScore[((neighbor[0], neighbor[1]))])):
-                cameFrom[(neighbor[0], neighbor[1])] = curr
-                gScore[(neighbor[0], neighbor[1])] = tempG
-                openList.append((neighbor, gScore[(neighbor[0], neighbor[1]) + 100*get_dist(neighbor, end_pos)]))
-                #TODO write lineofsight()
-                parent = cameFrom[(curr[0], curr[1])]
-                tempG = gScore[(parent[0], parent[1])] + get_dist(parent, neighbor)
-                if lineofsight(parent, neighbor):
-                    if(tempG < gScore[(neighbor[0], neighbor[1])]):
-                        cameFrom[(neighbor[0], neighbor[1])] = parent
-                        gScore[(neighbor[0], neighbor[1])] = tempG
-                        openList.append((neighbor, tempG + get_dist(neighbor, end_pos)))
-
+            if grid[neighbor[1],neighbor[0]] != 1:
+                tempG = gScore[(curr[0], curr[1])] + get_dist(curr, neighbor)
+                if (not(neighbor in [item[0] for item in closedList]) or (tempG < gScore[((neighbor[0], neighbor[1]))])):
+                    cameFrom[(neighbor[0], neighbor[1])] = curr
+                    gScore[(neighbor[0], neighbor[1])] = tempG
+                    openList.append((neighbor, gScore[(neighbor[0], neighbor[1])] + 100*get_dist(neighbor, end_pos)))
+                    parent = cameFrom[(curr[0], curr[1])] if not (curr[0] == start_pos[0] and curr[1] == start_pos[1]) else curr
+                    tempG = gScore[(parent[0], parent[1])] + get_dist(parent, neighbor)
+                    if lineofsight(parent, neighbor, grid):
+                        if tempG < gScore[(neighbor[0], neighbor[1])]:
+                            cameFrom[(neighbor[0], neighbor[1])] = parent
+                            gScore[(neighbor[0], neighbor[1])] = tempG
+                            openList.append((neighbor, tempG + 100*get_dist(neighbor, end_pos)))
     return None
