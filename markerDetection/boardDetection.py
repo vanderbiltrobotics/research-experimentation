@@ -31,6 +31,11 @@ board = aruco.GridBoard_create(5, 7, markerLength, markerSeparation, aruco_dict)
 
 '''marker detection and pose estimation'''
 cap = cv.VideoCapture(0)
+
+'''create file to store data'''
+f = open("vectors.txt", "a")
+count = 0
+
 while 1:
     # Capture frame
     ret, img = cap.read()
@@ -50,6 +55,11 @@ while 1:
         if retval != 0:
             img_w_axis = aruco.drawAxis(img, cameraMatrix, distCoeff, rvec, tvec, .01)
             print(tvec[2])
+            if count <= 2000:
+                f.write(str(tvec[0]) + "," + str(tvec[1]) + "," + str(tvec[2]) + ",")
+                f.write(str(rvec[0]) + "," + str(rvec[1]) + "," + str(rvec[2]) + "\n")
+                count = count + 1
+
 
     # Display the frame
     cv.imshow('Marker Detection', img)
