@@ -1,0 +1,66 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import colors
+from matplotlib.ticker import PercentFormatter
+
+# Takes a formatted .txt file with tvec & rvec pose estimation data and compares them
+# Goal: Determine the accuracy and range of simple Aruco Board detection
+
+# list = [[1],2,3]
+# print(list[0][0])
+
+poseData = open("vectors_test.txt","w")
+poseData.write("2.0,3.3,4.4"+"\n")
+poseData.write("1.2,2.4,3.5")
+poseData = open("vectors_test.txt","r")
+poseData = open("vectors.txt","r")
+
+vecTotal = []
+xvec = []
+yvec = []
+zvec = []
+r1vec = []
+r2vec = []
+r3vec = []
+for line in poseData:
+    # print(line)
+
+    # split string
+    splitLine = line.split(",")
+    # print(splitLine)
+
+    # remove \n from last number
+    splitLine[len(splitLine)-1] = splitLine[len(splitLine)-1][:-2]
+    # print(splitLine)
+
+    # check for incomplete data
+    empty = False
+    for x in splitLine:
+        if x == '':
+            empty = True
+
+    if not empty:
+        # convert to num
+        vec = [float(i) for i in splitLine]
+        # print(vec)
+
+        # add to list of all data
+        xvec.append(vec[0])
+        yvec.append(vec[1])
+        zvec.append(vec[2])
+        r1vec.append(vec[3])
+        r2vec.append(vec[4])
+        r3vec.append(vec[5])
+
+print(xvec)
+n_bins = 200
+fig, axs = plt.subplots(1, 2, sharey=True, tight_layout=True)
+axs[0].hist(zvec, bins=n_bins)
+# axs[1].hist(yvec, bins=n_bins)
+plt.show()
+
+
+
+
+
+

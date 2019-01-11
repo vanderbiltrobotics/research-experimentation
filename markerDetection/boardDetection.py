@@ -54,10 +54,10 @@ while 1:
         retval, rvec, tvec = aruco.estimatePoseBoard(corners, ids, board, cameraMatrix, distCoeff)
         if retval != 0:
             img_w_axis = aruco.drawAxis(img, cameraMatrix, distCoeff, rvec, tvec, .01)
-            print(tvec[2])
-            if count <= 2000:
-                f.write(str(tvec[0]) + "," + str(tvec[1]) + "," + str(tvec[2]) + ",")
-                f.write(str(rvec[0]) + "," + str(rvec[1]) + "," + str(rvec[2]) + "\n")
+            print(tvec[2][0])
+            if count <= 200:
+                f.write(str(tvec[0][0]) + "," + str(tvec[1][0]) + "," + str(tvec[2][0]) + ",")
+                f.write(str(rvec[0][0]) + "," + str(rvec[1][0]) + "," + str(rvec[2][0]) + "\n")
                 count = count + 1
 
 
