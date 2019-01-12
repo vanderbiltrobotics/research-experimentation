@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 import yaml
 
+left_cam = 2
+right_cam = 1
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
@@ -13,7 +15,8 @@ objp[:,:2] = np.mgrid[0:7,0:6].T.reshape(-1,2)
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(left_cam)
+# cap = cv2.VideoCapture(right_cam)
 found = 0
 while(found < 10):  # Here, 10 can be changed to whatever number you like to choose
     ret, img = cap.read() # Capture frame-by-frame
@@ -45,5 +48,5 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.sh
 
 data = {'camera_matrix': np.asarray(mtx).tolist(), 'dist_coeff': np.asarray(dist).tolist()}
 
-with open("calibration.yaml", "w") as f:
+with open("calibration_left_cam.yaml", "w") as f:
     yaml.dump(data, f)
