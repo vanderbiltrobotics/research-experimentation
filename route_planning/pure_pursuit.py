@@ -2,7 +2,7 @@
 # Output: double linear_velocity, double angular_velocity
 
 import numpy as np
-tp = [] #list of point coordinates
+tp = np.array([]) #list of point coordinates
 n = len(tp) #number of turning points
 
 # Helper Functions
@@ -24,11 +24,15 @@ def dotprod(v1, v2 = (1,0)):
 # i: the segment of the  path we are in
 def projectbase(cur, i):
     if i < n:
-        segv = (tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1])
-        seglen = dis(tp[i], tp[i+1])
-        curlen = dotprod(cur, segv)
+        if ( i == n - 1 ):
+            return tp[n]
+        else:
+            segv = (tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1])
+            seglen = dis(tp[i], tp[i+1])
+            curv = (cur[0]-tp[i][0], cur[1]-tp[i][1])
+            curlen = dotprod(curv, segv) / seglen
         if curlen <= seglen:
-            return (curlen/seglen) * segv
+            return (curlen/seglen) ** segv + tp[i]
         else:
             projectbase(cur, i+1)
     return None
