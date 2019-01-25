@@ -1,10 +1,9 @@
-# This is the pseudo code for pure pursuit
 # Input: array of turning points
 # Output: double linear_velocity, double angular_velocity
 
 from math import sqrt
 tp = [] #list of point coordinates
-n = len(tp)
+n = len(tp) #number of turning points
 
 # Helper Functions
 
@@ -35,9 +34,10 @@ def projectbase(cur, i):
     return None
 
 # updatestrdist: returns the new length of the distance between look ahead and current location
-def updatestrdist():
-    strdist = 20
-    return strdist
+# cur: current location
+# i: the segment of path we are in
+def updatestrdist(cur, i):
+    return 20 * dis(cur, tp[i+1]) # 20 random number here
 
 # gentarget: returns the coordinates of the target
 # cur: the current position coordinates
