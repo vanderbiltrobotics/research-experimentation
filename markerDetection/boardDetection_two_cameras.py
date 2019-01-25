@@ -6,7 +6,7 @@ import os
 
 left_cam = 2
 right_cam = 1
-id_label = '2m_20 d'
+id_label = '3m-6in_30 d'
 
 
 ''' Load camera matrix and distortion coefficients '''
