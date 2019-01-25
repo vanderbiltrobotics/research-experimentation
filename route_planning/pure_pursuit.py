@@ -1,7 +1,7 @@
 # Input: array of turning points
 # Output: double linear_velocity, double angular_velocity
 
-from math import sqrt
+import numpy as np
 tp = [] #list of point coordinates
 n = len(tp) #number of turning points
 
@@ -11,13 +11,13 @@ n = len(tp) #number of turning points
 # v1: the first point
 # v2: the second point. defaults to origin
 def dis(v1, v2 = (0,0)):
-    return sqrt((v1[0]-v2[0])^2 + (v1[1]-v2[1])^2)
+    return np.linalg.norm(v1 - v2)
 
 # dotprod: returns the dot product of two vectors
 # v1: the first vector
 # v2: the second vector. defaults to (1,0)
 def dotprod(v1, v2 = (1,0)):
-    return v1[0]*v2[0] + v1[1]*v2[1]
+    return np.dot(v1,v2)
 
 # projectbase: returns the point on the path with shortest distance to current location
 # cur: current position coordinates
