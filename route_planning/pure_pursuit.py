@@ -2,7 +2,7 @@
 # Output: double linear_velocity, double angular_velocity
 
 import numpy as np
-tp = np.array([]) #list of point coordinates
+tp = np.array([(0, 0), (2, 3), (3, 3), (7, 9), (10, 10)]) #list of point coordinates
 n = len(tp) #number of turning points
 
 # Helper Functions
@@ -24,7 +24,7 @@ def dotprod(v1, v2 = (1,0)):
 # i: the segment of the  path we are in
 def projectbase(cur, i):
     if i < n:
-        if ( i == n - 1 ):
+        if i == n - 1:
             return tp[n]
         else:
             segv = (tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1])
@@ -41,7 +41,7 @@ def projectbase(cur, i):
 # cur: current location
 # i: the segment of path we are in
 def updatestrdist(cur, i):
-    return 5 + 20 * dis(cur, tp[i+1]) # 20 random number here
+    return 1 + dis(cur, tp[i+1]) # 20 random number here
 
 def trgtmkr(base, cur, strdist):
     return ((base[0] + cur[0] / dis(cur) * strdist), (base[1] + cur[1] / dis(cur) * strdist))
@@ -51,7 +51,11 @@ def trgtmkr(base, cur, strdist):
 # i: the segment of path we are in
 def gentarget(cur, i):
     base = projectbase(cur, i)
+    if base is None:
+        return None
     disremain = dis(base, tp[i+1])
+    if disremain == 0 and i == n-1:
+        return tp[i]
     strdist = updatestrdist(base, i)
     target = trgtmkr(base, cur, strdist)
     if strdist <= disremain:
@@ -69,4 +73,11 @@ def angular_vel(*args):
 
 #main function
 def pure_pursuit():
-    pass
+    i = 0
+    cur = (0, 0) #to be supplied
+    lookahead = gentarget(cur, i)
+
+
+
+
+pure_pursuit()
