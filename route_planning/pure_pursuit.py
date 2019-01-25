@@ -1,4 +1,4 @@
-# Input: array of turning points
+# Input: array of turning points, current location
 # Output: double linear_velocity, double angular_velocity
 
 import numpy as np
@@ -41,7 +41,10 @@ def projectbase(cur, i):
 # cur: current location
 # i: the segment of path we are in
 def updatestrdist(cur, i):
-    return 20 * dis(cur, tp[i+1]) # 20 random number here
+    return 5 + 20 * dis(cur, tp[i+1]) # 20 random number here
+
+def trgtmkr(base, cur, strdist):
+    return ((base[0] + cur[0] / dis(cur) * strdist), (base[1] + cur[1] / dis(cur) * strdist))
 
 # gentarget: returns the coordinates of the target
 # cur: the current position coordinates
@@ -49,13 +52,12 @@ def updatestrdist(cur, i):
 def gentarget(cur, i):
     base = projectbase(cur, i)
     disremain = dis(base, tp[i+1])
-    strdist = updatestrdist()
-    #TODO: how to check the target will be in the next segment or this one
-#   if disremain >= strdist:
-#       target = base + cur / cur.length() * strdist
-#       return target
-#   else:
-#       gentarget(strdist - disremain, cur->next)
+    strdist = updatestrdist(base, i)
+    target = trgtmkr(base, cur, strdist)
+    if strdist <= disremain:
+      return target
+    else:
+      gentarget(cur, i+1)
 
 # linear_vel: returns linear velocity
 def linear_vel(*args):
