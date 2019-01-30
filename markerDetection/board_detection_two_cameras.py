@@ -8,15 +8,14 @@ left_cam = 2
 right_cam = 1
 id_label = '3m-6in_30 d'
 
-
 ''' Load camera matrix and distortion coefficients '''
-with open('camera_left.yaml') as f:
+with open('calibration/camera_left.yaml') as f:
     loadeddict = yaml.load(f)
 
 cameraMatrix_left = np.asarray(loadeddict.get('camera_matrix'))
 distCoeff_left = np.asarray(loadeddict.get('dist_coefficients'))
 
-with open('camera_right.yaml') as f:
+with open('calibration/camera_right.yaml') as f:
     loadeddict = yaml.load(f)
 
 cameraMatrix_right = np.asarray(loadeddict.get('camera_matrix'))
@@ -44,8 +43,12 @@ cap = cv.VideoCapture(left_cam)
 cap2 = cv.VideoCapture(right_cam)
 
 '''create file to store data'''
-f = open("./left_camera_detection/vectors_left_" + id_label + ".txt", "a")
-f2 = open("./right_camera_detection/vectors_right_" + id_label + ".txt", "a")
+POSE_PATH = "data/pose_estimates/stereo/"
+IMG_PATH = "data/images/stereo/"
+left_fname = "left/vectors_left"
+right_fname = "right/vectors_right"
+f = open(POSE_PATH + left_fname + id_label + ".txt", "a")
+f2 = open(POSE_PATH + right_fname + id_label + ".txt", "a")
 count = 0
 img_count = 1
 
@@ -66,8 +69,8 @@ while 1:
     # estimate pose from Aruco board
     if (ids is not None) and (ids2 is not None):
         if img_count <= 1:
-            cv.imwrite('./left_camera_board_pics/left_aruco_' + id_label + '.png', img)
-            cv.imwrite('./right_camera_board_pics/right_aruco_' + id_label + '.png', img2)
+            cv.imwrite(IMG_PATH + "left/left_aruco_" + id_label + '.png', img)
+            cv.imwrite(IMG_PATH + "right/right_aruco_" + id_label + '.png', img2)
             img_count += 1
         img = aruco.drawDetectedMarkers(img, corners)
         img2 = aruco.drawDetectedMarkers(img2, corners2)

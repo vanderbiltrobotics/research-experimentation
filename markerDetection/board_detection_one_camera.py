@@ -6,7 +6,7 @@ import glob
 import yaml
 
 ''' Load camera matrix and distortion coefficients '''
-with open('calibration10.yaml') as f:
+with open('calibration/calibration10.yaml') as f:
     loadeddict = yaml.load(f)
 
 cameraMatrix = np.asarray(loadeddict.get('camera_matrix'))
@@ -33,7 +33,9 @@ board = aruco.GridBoard_create(5, 7, markerLength, markerSeparation, aruco_dict)
 cap = cv.VideoCapture(0)
 
 '''create file to store data'''
-f = open("vectors.txt", "a")
+PATH = "data/pose_estimates/mono/"
+filename = "vectors.txt"
+f = open(PATH + filename, "a")
 count = 0
 
 while 1:
