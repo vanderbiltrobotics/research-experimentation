@@ -15,10 +15,7 @@ x = 0.1524  # distance from center to measured corner; meters
 theta = [0,5,15,25,35,45]
 y0 = [2,4,6]
 
-
-poseData = open("vectors_right_2m_0 d.txt","w")
-poseData = open("vectors_right_2m_0 d.txt","r")
-poseData = open("vectors_right_2m_0 d.txt","r")
+poseData = open("right_camera_detection/vectors_right_2m_0 d.txt","r")
 
 vecTotal = []
 xvec = []
