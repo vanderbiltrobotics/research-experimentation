@@ -24,7 +24,7 @@ def dotprod(v1, v2 = (1,0)):
 # i: the segment of the  path we are in
 def projectbase(cur, i):
     if i < n:
-        if ( i == n - 1 ):
+        if ( i == n - 1 ): #if you're on the last segment return the final point
             return tp[n]
         else:
             segv = (tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1])
