@@ -27,15 +27,18 @@ def get_true_translation(dist, theta, radius):
 
 
 ''' Experiment constants '''
-theta = 0
+theta = 0.959931
 radius = 0.1397
 dist = 2
 
-truevals = get_true_translation(dist, theta, radius)
+MEANS_FILENAME = "means_2m_55 d"
+STD_FILENAME = "std_2m_55 d"
 
-data = np.loadtxt("data/pose_estimates/stereo/left/vectors_left_2m_30 d.txt" , delimiter=',')
+data = np.loadtxt("data/pose_estimates/stereo/left/vectors_left_2m_55 d.txt" , delimiter=',')
 
 data = data[:, 0:4]
+
+truevals = get_true_translation(dist, theta, radius)
 
 error = data - truevals
 
@@ -45,15 +48,17 @@ std = np.std(error, axis=0)
 print(means)
 print(std)
 
-MEANS_FILEPATH = "data/analysis_data/stereo/left/means"
-STD_FILEPATH = "data/analysis_data/stereo/left/means"
-FILENAME = "2m_0d"
+MEANS_FILEPATH = "data/analysis_data/stereo/left/means/"
+STD_FILEPATH = "data/analysis_data/stereo/left/std/"
 
-means_file = open(MEANS_FILEPATH + FILENAME + ".txt", "w")
-std_file = open(STD_FILEPATH + FILENAME + ".txt", "w")
+means_file = open(MEANS_FILEPATH + MEANS_FILENAME + ".txt", "a")
+std_file = open(STD_FILEPATH + STD_FILENAME  + ".txt", "a")
 
-means_file.write(means[0] + "," + means[1] + "," + means[3] + "\n")
-means_file.write(std[0] + "," + std[1] + "," + std[3] + "\n")
+means_file = open(MEANS_FILEPATH + MEANS_FILENAME + ".txt", "w")
+std_file = open(STD_FILEPATH + STD_FILENAME + ".txt", "w")
+
+means_file.write(str(means[0]) + "," + str(means[2]) + "," + str(means[3]) + "\n")
+means_file.write(str(std[0]) + "," + str(std[2]) + "," + str(std[3]) + "\n")
 
 
 
