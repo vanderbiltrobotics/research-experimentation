@@ -2,9 +2,11 @@
 # Output: double linear_velocity, double angular_velocity
 
 import numpy as np
-tp = np.array([[1,1],[25,25],[50,50]]) #list of point coordinates
+# tp = my_grid.test_search_algo(A_star) #list of point coordinates
+tp = []
 n = len(tp) #number of turning points
-
+for i in range(6):
+    tp.append([0,i])
 # Helper Functions
 
 # dis: returns distance between two points
@@ -66,22 +68,19 @@ def gentarget(cur, i):
 
 # linear_vel: returns linear velocity
 def linear_vel(lookahead, cur):
-    return 1 + dis(cur, lookahead)
-    #TODO
-    #    convert length to velocity
+    return 0.2 + (1 + dis(cur, lookahead))**(-1)
 
 # angular_vel: returns the angular velocity
 def angular_vel(lookahead, cur):
-    curvature = 2*lookahead[0] / dis(lookahead,cur)**2
-    #TODO
-    #    convert arc length to angular velocity
-    return curvature
+    return 0 + (2*lookahead[0] / dis(lookahead,cur)**2)**(-1)
 
 # main function
 def pure_pursuit():
     i = 0
-    cur = tp[0]     # to be supplied
-    # while i < n:
+    print tp
+    cur = tp[i]     # to be supplied
     lookahead = gentarget(cur, i)
     print "linear velocity: {}\nangular velocity: {}".format(linear_vel(lookahead, cur), angular_vel(lookahead, cur))
     i += 1
+
+pure_pursuit()

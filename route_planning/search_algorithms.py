@@ -44,6 +44,14 @@ def get_neighbors(dims, point):
        neighbors.append([point[0], point[1] - 1])
     if point[1] < dims_xy[1] - 1:
        neighbors.append([point[0], point[1] + 1])
+    if (point[1] < dims_xy[1] - 1) and (point[0] < dims_xy[0] - 1):
+       neighbors.append([point[0] + 1, point[1] + 1])
+    if (point[1] > 0) and (point[0] < dims_xy[0] - 1):
+       neighbors.append([point[0] - 1, point[1] + 1])
+    if (point[1] < dims_xy[1] - 1) and (point[0] > 0):
+       neighbors.append([point[0] + 1, point[1] - 1])
+    if (point[0] > 0) and (point[1] > 0):
+       neighbors.append([point[0] - 1, point[1] - 1])
     return neighbors
 
 # Returns distance between two points - useful heuristic for informed search
@@ -52,9 +60,17 @@ def get_dist(p1, p2):
 
 def construct(cameFrom, path, c):
     if not(cameFrom[(c[0],c[1])] is None):
-        path.append(c)
+        (x, y) = cameFrom[(c[0], c[1])]
+        if not (cameFrom[(x, y)] is None):
+            (x1, y1) = cameFrom[(x, y)]
+            if not(((x1 - x) == (x - c[0])) and ((y1 - y) == (y - c[1]))):
+                path.append([x, y])
+        else:
+            path.append([x, y])
         c = cameFrom[(c[0],c[1])]
         construct(cameFrom,path,c)
+    # else:
+    #     path.append(c)
 
 
 def lineofsight(parent, neighbor, grid):
@@ -247,6 +263,7 @@ def theta_star(grid, start_pos, end_pos):
         if(curr[0]==end_pos[0]) and (curr[1]==end_pos[1]):
             path = []
             construct(cameFrom,path,curr)
+            path.append(end_pos)
             return path
         for neighbor in get_neighbors([576, 369], curr):
             if grid[neighbor[1],neighbor[0]] != 1:
