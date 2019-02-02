@@ -14,19 +14,28 @@ def get_true_translation(dist, theta, radius):
     true_x = radius * cos(theta)
     true_z = dist + (radius * sin(theta))
     true_y = 0.3
-    return([true_x, true_y, true_z])
+
+    while(theta < -pi):
+        theta -= 2*pi
+
+    while (theta > pi):
+        theta += 2 * pi
+
+
+
+    return([true_x, true_y, true_z, theta])
 
 
 ''' Experiment constants '''
-x = 0.1524  # distance from center to measured corner; meters
-theta = [0,5,15,25,35,45]
-y0 = [2,4,6]
+theta = 0
+radius = 0.1397
+dist = 2
+
+truevals = get_true_translation(dist, theta, radius)
 
 data = np.loadtxt("data/pose_estimates/stereo/left/vectors_left_2m_30 d.txt" , delimiter=',')
 
-data = data[:, 0:3]
-
-truevals = get_true_translation(2, pi/6, 0.1397)
+data = data[:, 0:4]
 
 error = data - truevals
 
@@ -35,6 +44,18 @@ std = np.std(error, axis=0)
 
 print(means)
 print(std)
+
+MEANS_FILEPATH = "data/analysis_data/stereo/left/means"
+STD_FILEPATH = "data/analysis_data/stereo/left/means"
+FILENAME = "2m_0d"
+
+means_file = open(MEANS_FILEPATH + FILENAME + ".txt", "w")
+std_file = open(STD_FILEPATH + FILENAME + ".txt", "w")
+
+means_file.write(means[0] + "," + means[1] + "," + means[3] + "\n")
+means_file.write(std[0] + "," + std[1] + "," + std[3] + "\n")
+
+
 
 #do every data file
 #save to file - [dist, angle (rad), x_err_mean, x_err_std, z_error...., angle_error......., theta_error....]

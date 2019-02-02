@@ -5,3 +5,4 @@
 /**/*.pyc
 markerDetection/fileTest.py
 markerDetection/test.txt
+markerDetection/data/pose_estimates/mono/test.txt
