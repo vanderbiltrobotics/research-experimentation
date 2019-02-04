@@ -2,6 +2,7 @@
 # Output: double linear_velocity, double angular_velocity
 
 import numpy as np
+import math
 # tp = my_grid.test_search_algo(A_star) #list of point coordinates
 tp = []
 for i in range(6):
@@ -28,15 +29,16 @@ def dotprod(v1, v2 = [1,0]):
 
 def trgtmkr(base, strdist, i):
     # return base[0] + cur[0] / dis(cur) * strdist, base[1] + cur[1] / dis(cur) * strdist
-    dx = tp[i+1][0] - tp[i][0]
-    dy = tp[i+1][1] - tp[i][1]
-    if dx == 0:
-        return base[0], base[1] + strdist
-    if dy == 0:
-        return base[0] + strdist, base[1]
-    return [base[0] + strdist/np.sqrt(1+np.square(dy/dx)), base[1] + (strdist*np.sqrt(1+np.square(dy/dx)))/(dy/dx)]
-    # len = dis(base, tp[i+1])
-    # return [base[0] + (strdist/len)*tp[i+1][0], base[1] + (strdist/len)*tp[i+1][1]]
+    seglen = dis(tp[i+1],base)
+    segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
+    return [base[0] + (strdist / seglen) * segv[0], base[1] + (strdist / seglen) * segv[1]]
+    # dx = tp[i+1][0] - tp[i][0]
+    # dy = tp[i+1][1] - tp[i][1]
+    # if dx == 0:
+    #     return base[0], base[1] + strdist
+    # if dy == 0:
+    #     return base[0] + strdist, base[1]
+    # return [base[0] + strdist/np.sqrt(1+np.square(dy/dx)), base[1] + (strdist*np.sqrt(1+np.square(dy/dx)))/(dy/dx)]
 
 # projectbase: returns the point on the path with shortest distance to current location
 # cur: current position coordinates
@@ -59,9 +61,10 @@ def projectbase(cur, i):
         seglen = dis(tp[i+1], tp[i]) * 1.0
         curv = [cur[0] - tp[i][0], cur[1] - tp[i][1]]
         curlen = dotprod(curv, segv) / seglen
-        print "curlen: {}\ntp[i]: {}\nseglen: {}\ncurv: {}\n".format(curlen, tp[i], seglen, curv)
+        print "curlen: {}\ntp[i]: {}\nseglen: {}\ncurv: {}".format(curlen, tp[i], seglen, curv)
         if curlen <= seglen:
-            return trgtmkr(tp[i], curlen, i)
+            # return trgtmkr(tp[i], curlen, i)
+            return [tp[i][0] + (curlen/seglen)*segv[0], tp[i][1] + (curlen/seglen)*segv[1]]
         else:
             return projectbase(cur, i+1)
     return None
@@ -83,24 +86,25 @@ def gentarget(cur, i):
     if disremain == 0 and i == n-1:
         return tp[n-1]
     strdist = 1
-    print "base: {}\nstrdist: {}".format(base, strdist)
+    print "base: {}\nstrdist: {}\ndisremain: {}\ni: {}".format(base, strdist, disremain, i)
     return trgtmkr(base, strdist, i) if strdist <= disremain else trgtmkr(tp[i+1], strdist-disremain, i+1)
 
 # linear_vel: returns linear velocity
-def linear_vel(lookahead, cur):
-    return 0.2 + (1 + dis(cur, lookahead))**(-1)
+def linear_vel():
+    return 1
 
 # angular_vel: returns the angular velocity
 def angular_vel(lookahead, cur):
-    return 0 + (2*lookahead[0] / dis(lookahead,cur)**2)**(-1)
+    theta = 135
+    return ((np.square(cur[0]-lookahead[0]) + np.square(cur[1] - lookahead[1])) / (linear_vel()*(math.sin(math.radians(theta))*(lookahead[1]-cur[1]) + math.cos(math.radians(theta))*(lookahead[0]-cur[0]))))
 
 # main function
 def pure_pursuit():
-    i = 1
+    i = 0
     print tp
-    cur = [2.5,1]     # to be supplied
+    cur = [0.5,0.5]     # to be supplied
     lookahead = gentarget(cur, i)
     print "lookahead: {}\n".format(lookahead)
-    # print "linear velocity: {}\nangular velocity: {}".format(linear_vel(lookahead, cur), angular_vel(lookahead, cur))
+    print "linear velocity: {}\nangular velocity: {}".format(linear_vel(), angular_vel(lookahead, cur))
 
 pure_pursuit()
