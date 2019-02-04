@@ -4,9 +4,10 @@
 import numpy as np
 # tp = my_grid.test_search_algo(A_star) #list of point coordinates
 tp = []
-n = len(tp) #number of turning points
 for i in range(6):
-    tp.append([0,i])
+    tp.append([i+1,i])
+n = len(tp) #number of turning points
+
 # Helper Functions
 
 # dis: returns distance between two points
@@ -25,23 +26,44 @@ def dotprod(v1, v2 = [1,0]):
     v2 = np.array(v2)
     return np.dot(v1,v2)
 
+def trgtmkr(base, strdist, i):
+    # return base[0] + cur[0] / dis(cur) * strdist, base[1] + cur[1] / dis(cur) * strdist
+    dx = tp[i+1][0] - tp[i][0]
+    dy = tp[i+1][1] - tp[i][1]
+    if dx == 0:
+        return base[0], base[1] + strdist
+    if dy == 0:
+        return base[0] + strdist, base[1]
+    return [base[0] + strdist/np.sqrt(1+np.square(dy/dx)), base[1] + (strdist*np.sqrt(1+np.square(dy/dx)))/(dy/dx)]
+    # len = dis(base, tp[i+1])
+    # return [base[0] + (strdist/len)*tp[i+1][0], base[1] + (strdist/len)*tp[i+1][1]]
+
 # projectbase: returns the point on the path with shortest distance to current location
 # cur: current position coordinates
 # i: the segment of the  path we are in
 def projectbase(cur, i):
     if i < n:
         if i == n - 1:
-            return tp[n]
-        else:
-            segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
-            seglen = dis(tp[i], tp[i+1])
-            curv = [cur[0]-tp[i][0], cur[1]-tp[i][1]]
-            curlen = dotprod(curv, segv) / seglen
+            return tp[n-1]
+        # else:
+        #     segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
+        #     seglen = dis(tp[i], tp[i+1])
+        #     curv = [cur[0]-tp[i][0], cur[1]-tp[i][1]]
+        #     curlen = dotprod(curv, segv) / seglen
+        # if curlen <= seglen:
+        #     #** is exponent
+        #     return (curlen/seglen) ** segv + tp[i]
+        # else:
+        #     projectbase(cur, i+1)
+        segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
+        seglen = dis(tp[i+1], tp[i]) * 1.0
+        curv = [cur[0] - tp[i][0], cur[1] - tp[i][1]]
+        curlen = dotprod(curv, segv) / seglen
+        print "curlen: {}\ntp[i]: {}\nseglen: {}\ncurv: {}\n".format(curlen, tp[i], seglen, curv)
         if curlen <= seglen:
-            #** is exponent
-            return (curlen/seglen) ** segv + tp[i]
+            return trgtmkr(tp[i], curlen, i)
         else:
-            projectbase(cur, i+1)
+            return projectbase(cur, i+1)
     return None
 
 # updatestrdist: returns the new length of the distance between look ahead and current location
@@ -49,9 +71,6 @@ def projectbase(cur, i):
 # i: the segment of path we are in
 def updatestrdist(cur, i):
     return 1 + dis(cur, tp[i+1]) # 1 random number here
-
-def trgtmkr(base, cur, strdist):
-    return base[0] + cur[0] / dis(cur) * strdist, base[1] + cur[1] / dis(cur) * strdist
 
 # gentarget: returns the coordinates of the target
 # cur: the current position coordinates
@@ -62,9 +81,10 @@ def gentarget(cur, i):
         return None
     disremain = dis(base, tp[i+1])
     if disremain == 0 and i == n-1:
-        return tp[i]
-    strdist = disremain if i >= n-1 else updatestrdist(base, i)
-    return trgtmkr(base, cur, strdist) if strdist <= disremain else trgtmkr(tp[i+1], cur, strdist-disremain)
+        return tp[n-1]
+    strdist = 1
+    print "base: {}\nstrdist: {}".format(base, strdist)
+    return trgtmkr(base, strdist, i) if strdist <= disremain else trgtmkr(tp[i+1], strdist-disremain, i+1)
 
 # linear_vel: returns linear velocity
 def linear_vel(lookahead, cur):
@@ -76,11 +96,11 @@ def angular_vel(lookahead, cur):
 
 # main function
 def pure_pursuit():
-    i = 0
+    i = 1
     print tp
-    cur = tp[i]     # to be supplied
+    cur = [2.5,1]     # to be supplied
     lookahead = gentarget(cur, i)
-    print "linear velocity: {}\nangular velocity: {}".format(linear_vel(lookahead, cur), angular_vel(lookahead, cur))
-    i += 1
+    print "lookahead: {}\n".format(lookahead)
+    # print "linear velocity: {}\nangular velocity: {}".format(linear_vel(lookahead, cur), angular_vel(lookahead, cur))
 
 pure_pursuit()
