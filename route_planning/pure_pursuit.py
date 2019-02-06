@@ -1,110 +1,122 @@
 # Input: array of turning points, current location
-# Output: double linear_velocity, double angular_velocity
+# Output: double angular_velocity
+
+#current.pose
+#route nav_msgs/path
+#publlish twist msg
+#recomputing route
+#efficient path
+
+path_topic = ""
+current_topic = ""
+twist_topic = ""
 
 import numpy as np
 import math
-# tp = my_grid.test_search_algo(A_star) #list of point coordinates
-tp = []
-for i in range(6):
-    tp.append([i+1,i])
-n = len(tp) #number of turning points
+import rospy
+from geometry_msgs.msg import Twist, Pose, PoseStamped
+import nav_msgs
+
+class PurePursuit:
+
+    def __init__(self, path_topic, current_topic, twist_topic):
+        self.cur_sub = rospy.Subscriber(current_topic, Pose, self.set_current)
+        self.path_sub = rospy.Subscriber(path_topic, PoseStamped, self.set_path)
+        self.n = len(self.path)
+        self.i = [index if (self.path[index] >= self.cur and self.path[index+1] <= self.cur) else None for index in range(self.n-1)]
+        # 1 random val here
+        self.linear_vel = 1
+        self.twist_pub = rospy.Publisher(twist_topic, Twist, queue_size=0)
+        self.twist = 0
+        #self.twist = angular_vel
+
+# Subscriber Functions
+
+    def set_path(self, new_path):
+        self.path = new_path.poses
+
+    def set_current(self, new_current):
+        self.cur = new_current.pose
+
+# Publisher Function
+
+    def send_twist(self):
+        self.twist_pub.publish(self.twist)
 
 # Helper Functions
 
-# dis: returns distance between two points
-# v1: the first point
-# v2: the second point. defaults to origin
-def dis(v1, v2 = [0,0]):
-    v1 = np.array(v1)
-    v2 = np.array(v2)
-    return np.linalg.norm(v1-v2)
+    # dis: returns distance between two points
+    # v1: the first point
+    # v2: the second point. defaults to origin
+    def dis(self, v1, v2 = [0,0]):
+        v1 = np.array(v1)
+        v2 = np.array(v2)
+        return np.linalg.norm(v1-v2)
 
-# dotprod: returns the dot product of two vectors
-# v1: the first vector
-# v2: the second vector. defaults to (1,0)
-def dotprod(v1, v2 = [1,0]):
-    v1 = np.array(v1)
-    v2 = np.array(v2)
-    return np.dot(v1,v2)
+    def genpoint(self, i):
+        seglen = self.dis(self.path[i+1],self.base)
+        segv = [self.path[i+1][0]-self.path[i][0], self.path[i+1][1]-self.path[i][1]]
+        return [self.base[0] + (self.strdist / seglen) * segv[0], self.base[1] + (self.strdist / seglen) * segv[1]]
 
-def trgtmkr(base, strdist, i):
-    # return base[0] + cur[0] / dis(cur) * strdist, base[1] + cur[1] / dis(cur) * strdist
-    seglen = dis(tp[i+1],base)
-    segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
-    return [base[0] + (strdist / seglen) * segv[0], base[1] + (strdist / seglen) * segv[1]]
-    # dx = tp[i+1][0] - tp[i][0]
-    # dy = tp[i+1][1] - tp[i][1]
-    # if dx == 0:
-    #     return base[0], base[1] + strdist
-    # if dy == 0:
-    #     return base[0] + strdist, base[1]
-    # return [base[0] + strdist/np.sqrt(1+np.square(dy/dx)), base[1] + (strdist*np.sqrt(1+np.square(dy/dx)))/(dy/dx)]
-
-# projectbase: returns the point on the path with shortest distance to current location
-# cur: current position coordinates
-# i: the segment of the  path we are in
-def projectbase(cur, i):
-    if i < n:
-        if i == n - 1:
-            return tp[n-1]
-        # else:
-        #     segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
-        #     seglen = dis(tp[i], tp[i+1])
-        #     curv = [cur[0]-tp[i][0], cur[1]-tp[i][1]]
-        #     curlen = dotprod(curv, segv) / seglen
-        # if curlen <= seglen:
-        #     #** is exponent
-        #     return (curlen/seglen) ** segv + tp[i]
-        # else:
-        #     projectbase(cur, i+1)
-        segv = [tp[i+1][0]-tp[i][0], tp[i+1][1]-tp[i][1]]
-        seglen = dis(tp[i+1], tp[i]) * 1.0
-        curv = [cur[0] - tp[i][0], cur[1] - tp[i][1]]
-        curlen = dotprod(curv, segv) / seglen
-        print "curlen: {}\ntp[i]: {}\nseglen: {}\ncurv: {}".format(curlen, tp[i], seglen, curv)
-        if curlen <= seglen:
-            # return trgtmkr(tp[i], curlen, i)
-            return [tp[i][0] + (curlen/seglen)*segv[0], tp[i][1] + (curlen/seglen)*segv[1]]
-        else:
-            return projectbase(cur, i+1)
-    return None
-
-# updatestrdist: returns the new length of the distance between look ahead and current location
-# cur: current location
-# i: the segment of path we are in
-def updatestrdist(cur, i):
-    return 1 + dis(cur, tp[i+1]) # 1 random number here
-
-# gentarget: returns the coordinates of the target
-# cur: the current position coordinates
-# i: the segment of path we are in
-def gentarget(cur, i):
-    base = projectbase(cur, i)
-    if base is None:
+    # projectbase: returns the point on the path with shortest distance to current location
+    # cur: current position coordinates
+    # i: the segment of the  path we are in
+    def projectbase(self, i):
+        if i < self.n:
+            if i == self.n - 1:
+                return self.path[self.n-1]
+            segv = [self.path[i+1][0]-self.path[i][0], self.path[i+1][1]-self.path[i][1]]
+            seglen = self.dis(self.path[i+1], self.path[i]) * 1.0
+            curv = [self.cur[0] - self.path[i][0], self.cur[1] - self.path[i][1]]
+            curlen = np.dot(curv, segv) / seglen
+            print "curlen: {}\ntp[i]: {}\nseglen: {}\ncurv: {}".format(curlen, self.path[i], seglen, curv)
+            if curlen <= seglen:
+                return [self.path[i][0] + (curlen/seglen)*segv[0], self.path[i][1] + (curlen/seglen)*segv[1]]
+            else:
+                return self.projectbase(i+1)
         return None
-    disremain = dis(base, tp[i+1])
-    if disremain == 0 and i == n-1:
-        return tp[n-1]
-    strdist = 1
-    print "base: {}\nstrdist: {}\ndisremain: {}\ni: {}".format(base, strdist, disremain, i)
-    return trgtmkr(base, strdist, i) if strdist <= disremain else trgtmkr(tp[i+1], strdist-disremain, i+1)
 
-# linear_vel: returns linear velocity
-def linear_vel():
-    return 1
+    # updatestrdist: returns the new length of the distance between look ahead and current location
+    # cur: current location
+    # i: the segment of path we are in
+    def updatestrdist(self, i):
+        return 1 + self.dis(self.cur, self.path[i+1]) # 1 random number here
 
-# angular_vel: returns the angular velocity
-def angular_vel(lookahead, cur):
-    theta = 135
-    return ((np.square(cur[0]-lookahead[0]) + np.square(cur[1] - lookahead[1])) / (linear_vel()*(math.sin(math.radians(theta))*(lookahead[1]-cur[1]) + math.cos(math.radians(theta))*(lookahead[0]-cur[0]))))
+    # gentarget: returns the coordinates of the target
+    # cur: the current position coordinates
+    # i: the segment of path we are in
+    def gentarget(self, i):
+        self.base = self.projectbase(i)
+        if self.base is None:
+            return None
+        disremain = self.dis(self.base, self.path[i+1])
+        if disremain == 0 and i == self.n-1:
+            return self.path[self.n-1]
+        self.strdist = self.updatestrdist(i)
+        print "base: {}\nstrdist: {}\ndisremain: {}\ni: {}".format(self.base, self.strdist, disremain, i)
+        return self.genpoint(i) if self.strdist <= disremain else self.genpoint(i+1)
 
-# main function
-def pure_pursuit():
-    i = 0
-    print tp
-    cur = [0.5,0.5]     # to be supplied
-    lookahead = gentarget(cur, i)
-    print "lookahead: {}\n".format(lookahead)
-    print "linear velocity: {}\nangular velocity: {}".format(linear_vel(), angular_vel(lookahead, cur))
+    # linear_vel: returns linear velocity
+    def linear_velocity(self):
+        return self.linear_vel
 
-pure_pursuit()
+    # angular_vel: returns the angular velocity
+    def angular_vel(self, lookahead, cur):
+        # replace with formula
+        # theta = 2 * math.acos(self.cur.orientation.w) along (x, y, z)
+        theta = 135
+        # clean up and double check the formula
+        return 2/((np.square(cur[0]-lookahead[0]) + np.square(cur[1] - lookahead[1])) / (self.linear_velocity()*(math.sin(math.radians(theta))*(lookahead[1]-cur[1]) + math.cos(math.radians(theta))*(lookahead[0]-cur[0]))))
+
+    # main function
+    def calc(self):
+        print self.path
+        lookahead = self.gentarget(self.i)
+        self.twist = self.angular_vel(lookahead, self.cur)
+        print "lookahead: {}\n".format(lookahead)
+        print "linear velocity: {}\nangular velocity: {}".format(self.linear_velocity(), self.twist)
+        self.send_twist()
+
+
+pp = PurePursuit(path_topic, current_topic, twist_topic)
+pp.calc()
