@@ -142,6 +142,7 @@ class GridWorld:
         # Display resulting path
         if display_results:
             self.show_path(start_pos, end_pos, path_points)
+        return path_points
 
 
 # ----------------------------------------------------------------------------
