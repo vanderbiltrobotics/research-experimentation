@@ -15,6 +15,7 @@ import numpy as np
 import math
 import rospy
 from geometry_msgs.msg import Twist, Pose, PoseStamped
+from tf.transformations import euler_from_quaternion
 import nav_msgs
 
 class PurePursuit:
@@ -23,11 +24,12 @@ class PurePursuit:
         self.cur_sub = rospy.Subscriber(current_topic, Pose, self.set_current)
         self.path_sub = rospy.Subscriber(path_topic, PoseStamped, self.set_path)
         self.n = len(self.path)
-        self.i = [index if (self.path[index] >= self.cur and self.path[index+1] <= self.cur) else None for index in range(self.n-1)]
         # 1 random val here
         self.linear_vel = 1
         self.twist_pub = rospy.Publisher(twist_topic, Twist, queue_size=0)
         self.twist = 0
+        self.base = self.projectbase()
+        self.i = -1
         #self.twist = angular_vel
 
 # Subscriber Functions
@@ -53,6 +55,8 @@ class PurePursuit:
         v2 = np.array(v2)
         return np.linalg.norm(v1-v2)
 
+    # genpoint: returns the lookahead point strdist away
+    # i: the segment of the path we are in
     def genpoint(self, i):
         seglen = self.dis(self.path[i+1],self.base)
         segv = [self.path[i+1][0]-self.path[i][0], self.path[i+1][1]-self.path[i][1]]
@@ -61,7 +65,7 @@ class PurePursuit:
     # projectbase: returns the point on the path with shortest distance to current location
     # cur: current position coordinates
     # i: the segment of the  path we are in
-    def projectbase(self, i):
+    def projectbase(self, i = 0):
         if i < self.n:
             if i == self.n - 1:
                 return self.path[self.n-1]
@@ -71,6 +75,8 @@ class PurePursuit:
             curlen = np.dot(curv, segv) / seglen
             print "curlen: {}\ntp[i]: {}\nseglen: {}\ncurv: {}".format(curlen, self.path[i], seglen, curv)
             if curlen <= seglen:
+                if self.i != i:
+                    self.i = i
                 return [self.path[i][0] + (curlen/seglen)*segv[0], self.path[i][1] + (curlen/seglen)*segv[1]]
             else:
                 return self.projectbase(i+1)
@@ -103,8 +109,8 @@ class PurePursuit:
     # angular_vel: returns the angular velocity
     def angular_vel(self, lookahead, cur):
         # replace with formula
-        # theta = 2 * math.acos(self.cur.orientation.w) along (x, y, z)
-        theta = 135
+        # theta = 2 * math.acos(self.cur.orientation.w) along (x, y)
+        theta = euler_from_quaternion(self.cur.orientation)
         # clean up and double check the formula
         return 2/((np.square(cur[0]-lookahead[0]) + np.square(cur[1] - lookahead[1])) / (self.linear_velocity()*(math.sin(math.radians(theta))*(lookahead[1]-cur[1]) + math.cos(math.radians(theta))*(lookahead[0]-cur[0]))))
 
