@@ -1,166 +1,144 @@
-# Input: array of turning points, current location
-# Output: double angular_velocity
 
-#current.pose
-#route nav_msgs/path
-#publlish twist msg
-#recomputing route
-#efficient path
 
-path_topic = ""
-current_topic = ""
-twist_topic = ""
-
-import numpy as np
-import math
+# Import ROS packages
 import rospy
-from geometry_msgs.msg import Twist, Pose, PoseStamped
+from geometry_msgs.msg import Twist, Pose, PointStamped
+from nav_msgs.msg import Path
 from tf.transformations import euler_from_quaternion
-import nav_msgs
+
+# Import other required packages
+import numpy as np
+from math import sin, cos, pi
+
 
 class PurePursuit:
 
-    def __init__(self, path_topic, current_topic, twist_topic):
-        self.cur_sub = rospy.Subscriber(current_topic, Pose, self.set_current)
-        self.path_sub = rospy.Subscriber(path_topic, PoseStamped, self.set_path)
-        self.n = len(self.path)
-        # 1 random val here
-        self.linear_vel = 1
-        self.twist_pub = rospy.Publisher(twist_topic, Twist, queue_size=0)
-        self.twist = Twist()
-        self.base = self.projectbase()
-        self.i = -1
-        #self.twist = angular_vel
+    def __init__(self, max_lin_vel, max_lookahead):
 
-        # Set initial lookahead distance
-        self.lookahead_dist = 1.0
+        # Set initial linear velocity and lookahead distance
+        self.lin_vel = max_lin_vel
+        self.lin_vel_dir= 1
+        self.lookahead = max_lookahead
 
-# Subscriber Functions
+        # Initialize path
+        self.path = None
+        self.path_len = 0
+        self.goal_tolerance = 0.03
 
-    def set_path(self, new_path):
-        self.path = new_path.poses
+        # Create subscribers to pose, path topics
+        self.pose_sub = rospy.Subscriber("cur_pose", Pose, self.compute_new_twist)
+        self.path_sub = rospy.Subscriber("cur_path", Path, self.update_path)
 
-    def set_current(self, new_current):
-        self.cur = new_current.pose
+        # Create publisher to twist topic
+        self.twist_pub = rospy.Publisher("cmd_vel", Twist, queue_size=0)
+        self.goal_pub = rospy.Publisher("goal_pose", PointStamped, queue_size=0)
 
-# Publisher Function
+    # Callback function for Path topic
+    def update_path(self, new_path):
 
-    def send_twist(self):
-        self.twist_pub.publish(self.twist)
+        # Extract x and y coord from each pose in path
+        path = [[p.pose.position.x, p.pose.position.y] for p in new_path.poses]
 
-# Helper Functions
-
-    # dis: returns distance between two points
-    # v1: the first point
-    # v2: the second point. defaults to origin
-    def dis(self, v1, v2 = [0,0]):
-        v1 = np.array(v1)
-        v2 = np.array(v2)
-        return np.linalg.norm(v1-v2)
-
-    # genpoint: returns the lookahead point strdist away
-    # i: the segment of the path we are in
-    def genpoint(self, end_path, base, dist):
-        seglen = self.dis(end_path, base)
-        segv = [end_path[0] - base[0], end_path[1] - base[1]]
-        return [base + (dist / seglen) * segv[0], base[1] + (dist / seglen) * segv[1]]
-
-    # projectbase: returns the point on the path with shortest distance to current location
-    # cur: current position coordinates
-    # i: the segment of the  path we are in
-    def projectbase(self, cur_pos, i=0):
-
-        # If we've reached the end, drive toward the last point
-        if i == self.n - 1:
-            return self.path[self.n - 1]
-
-        # Vector, vector length of current path segment
-        segv = [self.path[i + 1][0] - self.path[i][0], self.path[i + 1][1] - self.path[i][1]]
-        seglen = self.dis(self.path[i + 1], self.path[i]) * 1.0
-
-        # Vector of current position along current segment
-        curv = [cur_pos[0] - self.path[i][0], cur_pos[1] - self.path[i][1]]
-
-        # Distance we've already travelled on current line segment
-        curlen = np.dot(curv, segv) / seglen
-
-        # Check if we've passed the end of the line segment
-        if curlen <= seglen:
-            self.i = i
-            return [self.path[i][0] + (curlen / seglen) * segv[0], self.path[i][1] + (curlen / seglen) * segv[1]]
-        else:
-            # Not on this line segment, check the next
-            return self.projectbase(cur_pos, i+1)
-
-    # updatestrdist: returns the new length of the distance between look ahead and current location
-    # cur: current location
-    # i: the segment of path we are in
-    def updatestrdist(self, i):
-        return 1 + self.dis(self.cur, self.path[i+1]) # 1 random number here
-
-    # gentarget: returns the coordinates of the target
-    # cur: the current position coordinates
-    # i: the segment of path we are in
-    def gentarget(self, cur_pos, i):
-
-        # Get closest point on path to current point - only check path
-        # segments that we haven't traversed yet
-        base = self.projectbase(cur_pos, i)
-
-        # Initial lookahead distance
-        cur_lookahead_dist = self.lookahead_dist
-
-        # initial i
-        cur_i = self.i
-
-        # Get remaining distance on the current segment
-        disremain = self.dis(base, self.path[i+1])
-
-        while disremain < cur_lookahead_dist:
-
-            # Compute new lookahead dist
-            cur_lookahead_dist = cur_lookahead_dist - disremain
-
-            # Update base
-            base = self.path[cur_i+1]
-
-            # Update i
-            cur_i += 1
-
-            # Compute new remaining distance
-            disremain = self.dis(base, self.path[cur_i+1])
-
-            # Check if we've reached the end of the path
-            if cur_i == self.n-1:
-                cur_lookahead_dist = 0
+        # Convert to numpy array and store in self.path
+        self.path = np.array(path)
+        self.path_len = len(self.path)
 
 
-        return self.genpoint(self.path[cur_i+1], base, cur_lookahead_dist)
+    # Returns angular velocity required to drive to target point given
+    # current pose and linear velocity
+    def compute_ang_vel(self, goal_pos, robot_pos, theta):
 
-    # linear_vel: returns linear velocity
-    def linear_velocity(self):
-        return self.linear_vel
+        # Store coords in variables
+        xg = goal_pos[0]
+        yg = goal_pos[1]
+        xr = robot_pos[0]
+        yr = robot_pos[1]
 
-    # angular_vel: returns the angular velocity
-    def angular_vel(self, lookahead, cur):
-        # replace with formula
-        # theta = 2 * math.acos(self.cur.orientation.w) along (x, y)
-        theta = euler_from_quaternion(self.cur.orientation)
-        # clean up and double check the formula
-        return 2/((np.square(cur[0]-lookahead[0]) + np.square(cur[1] - lookahead[1])) / (self.linear_velocity()*(math.sin(math.radians(theta))*(lookahead[1]-cur[1]) + math.cos(math.radians(theta))*(lookahead[0]-cur[0]))))
+        theta = -((pi / 2) - theta)
+
+        # Convert goal point into vehicle coordinates
+        xg_v = (xg - xr) * cos(theta) + (yg - yr) * sin(theta)
+        yg_v = - (xg - xr) * sin(theta) + (yg - yr) * cos(theta)
+
+        # Compute numerator and denominator
+        curvature = (-2 * xg_v) / (xg_v**2 + yg_v**2)
+
+        # If yg_v negative, drive backwards instead
+        self.lin_vel_dir = -1.0 if yg_v < 0.0 else 1.0
+
+        # Return final result
+        return self.lin_vel * self.lin_vel_dir * curvature
 
     # main function
-    def calc(self, cur_pos):
+    def compute_new_twist(self, new_pose):
 
-        # Get lookahead point
-        lookahead = self.gentarget(cur_pos, self.i)
+        # Only move if we have a path to follow
+        if self.path_len > 0:
 
-        # Determine linear and angular velocity to reach that point
-        self.twist.angular.x = self.angular_vel(lookahead, self.cur)
-        self.twist.linear.x = self.linear_velocity()
-        self.send_twist()
+            # Extract information from pose message
+            position = np.array([new_pose.position.x, new_pose.position.y])
+            quat = (
+                new_pose.orientation.x,
+                new_pose.orientation.y,
+                new_pose.orientation.z,
+                new_pose.orientation.w
+            )
+            rpy = euler_from_quaternion(quat)
+            print rpy
+            theta = rpy[2]
+
+            # Compute distance from current point to each path point
+            D = np.linalg.norm(position - self.path, axis=1)
+
+            # Get index of closest point
+            idx = np.argmin(D)
+
+            # Search along path until a point found that's farther than lookahead_dist
+            while idx < (self.path_len-1) and D[idx] < self.lookahead:
+                idx += 1
+            goal = self.path[idx]
+
+            # Calculate angular vel. from target point and linear vel
+            ang_vel = self.compute_ang_vel(goal, position, theta)
+
+            # Create new twist message
+            new_twist = Twist()
+            new_twist.linear.x = self.lin_vel * self.lin_vel_dir
+            new_twist.angular.z = ang_vel
+
+            # Create pose message for current goal position
+            goal_msg = PointStamped()
+            goal_msg.header.frame_id = "world"
+            goal_msg.point.x = goal[0]
+            goal_msg.point.y = goal[1]
+
+            # Publish message
+            self.twist_pub.publish(new_twist)
+            self.goal_pub.publish(goal_msg)
+
+            # If close enough to final point, path is finished
+            if np.linalg.norm(position - self.path[-1]) < self.goal_tolerance:
+                print "Reached the end of the path"
+                self.path = None
+                self.path_len = 0
+
+        # If no path, make sure speed is 0
+        else:
+            self.twist_pub.publish(Twist())
 
 
-pp = PurePursuit(path_topic, current_topic, twist_topic)
-pp.calc()
+if __name__ == "__main__":
+
+    # Initialize ROS node
+    rospy.init_node("pure_pursuit")
+
+    # Read parameters off server
+    lin_vel = rospy.get_param("pp_base_lin_vel", default=0.1)
+    max_lookahead = rospy.get_param("pp_max_lookahead", default=0.05)
+
+    # Create pure pursuit object
+    pp = PurePursuit(lin_vel, max_lookahead)
+
+    # Spin indefinitely
+    rospy.spin()
 
