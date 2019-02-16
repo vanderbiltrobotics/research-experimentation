@@ -84,19 +84,41 @@ class PurePursuit:
                 new_pose.orientation.w
             )
             rpy = euler_from_quaternion(quat)
-            print rpy
             theta = rpy[2]
 
             # Compute distance from current point to each path point
             D = np.linalg.norm(position - self.path, axis=1)
 
             # Get index of closest point
-            idx = np.argmin(D)
+            nearest = np.argmin(D)
+            idx = nearest
 
             # Search along path until a point found that's farther than lookahead_dist
             while idx < (self.path_len-1) and D[idx] < self.lookahead:
                 idx += 1
             goal = self.path[idx]
+
+            # Set velocity and lookahead
+            # TODO:
+            #       never go negative without abs
+            #       linear vel on lookahead and that on variance
+            #       scale values
+
+            # Get the path segment
+            path_segment = goal - self.path[nearest]
+
+            # Loop over the path and store distances of each point from the vector
+            varianc = []
+            for i in range(idx-nearest+1):
+                varianc.append(np.linalg.norm(self.path[idx + i]-path_segment))
+
+            # Calculate the variance of the data
+            variance = np.var(varianc)
+
+            # Calculate lookahead and linear velocity
+            self.lookahead = abs(max_lookahead + variance*(0.02 if variance <= 0.0025 else -0.1))
+            self.lin_vel = abs(0.1 + (self.lookahead-max_lookahead)*(2.0e+03))
+            print variance, self.lin_vel, self.lin_vel_dir, self.lookahead, self.lookahead-max_lookahead
 
             # Calculate angular vel. from target point and linear vel
             ang_vel = self.compute_ang_vel(goal, position, theta)

@@ -1,11 +1,10 @@
 # Input: array of turning points, current location
 # Output: double angular_velocity
 
-#current.pose
-#route nav_msgs/path
-#publlish twist msg
-#recomputing route
-#efficient path
+#TODO
+#   publish twist msg
+#   recomputing route
+#   dynamic distance
 
 path_topic = ""
 current_topic = ""
@@ -16,7 +15,6 @@ import math
 import rospy
 from geometry_msgs.msg import Twist, Pose, PoseStamped
 from tf.transformations import euler_from_quaternion
-import nav_msgs
 
 class PurePursuit:
 
@@ -110,7 +108,7 @@ class PurePursuit:
     def angular_vel(self, lookahead, cur):
         # replace with formula
         # theta = 2 * math.acos(self.cur.orientation.w) along (x, y)
-        theta = euler_from_quaternion(self.cur.orientation)
+        theta = euler_from_quaternion(self.cur.orientation, axes='xyzs')
         # clean up and double check the formula
         return 2/((np.square(cur[0]-lookahead[0]) + np.square(cur[1] - lookahead[1])) / (self.linear_velocity()*(math.sin(math.radians(theta))*(lookahead[1]-cur[1]) + math.cos(math.radians(theta))*(lookahead[0]-cur[0]))))
 
@@ -122,7 +120,6 @@ class PurePursuit:
         print "lookahead: {}\n".format(lookahead)
         print "linear velocity: {}\nangular velocity: {}".format(self.linear_velocity(), self.twist)
         self.send_twist()
-
 
 pp = PurePursuit(path_topic, current_topic, twist_topic)
 pp.calc()
