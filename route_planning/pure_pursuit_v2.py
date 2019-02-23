@@ -8,7 +8,7 @@ from tf.transformations import euler_from_quaternion
 
 # Import other required packages
 import numpy as np
-from math import sin, cos, pi
+from math import sin, cos, pi, exp
 
 
 class PurePursuit:
@@ -99,10 +99,6 @@ class PurePursuit:
             goal = self.path[idx]
 
             # Set velocity and lookahead
-            # TODO:
-            #       never go negative without abs
-            #       linear vel on lookahead and that on variance
-            #       scale values
 
             # Get the path segment
             path_segment = goal - self.path[nearest]
@@ -116,9 +112,18 @@ class PurePursuit:
             variance = np.var(varianc)
 
             # Calculate lookahead and linear velocity
-            self.lookahead = abs(max_lookahead + variance*(0.02 if variance <= 0.0025 else -0.1))
-            self.lin_vel = abs(0.1 + (self.lookahead-max_lookahead)*(2.0e+03))
-            print variance, self.lin_vel, self.lin_vel_dir, self.lookahead, self.lookahead-max_lookahead
+
+            # variance range = varies (0 to 0.001 rn in this case). desired range = -2 to +2
+            # range_variance = np.var(np.array(np.argmax(variance), np.argmin(variance)))
+            variance = -2 + (4/0.001)*(variance)
+
+            # map sigmoid_skewed result
+            # lookahead range = 0.05 (0 to 0.05) outputted range = 2 (-1 to 1)
+            self.lookahead = abs(max_lookahead/2 + 0.05/4 * (sigmoid(variance)))
+            # lin_vel range = 0.1 (0 to 0.1) sigmoid range = 2 (-1 to 1)
+            self.lin_vel = abs(0.05 + (0.1/4 * (sigmoid(variance))))
+
+            print variance, self.lin_vel, self.lookahead, max_lookahead, sigmoid(variance)
 
             # Calculate angular vel. from target point and linear vel
             ang_vel = self.compute_ang_vel(goal, position, theta)
@@ -148,6 +153,8 @@ class PurePursuit:
         else:
             self.twist_pub.publish(Twist())
 
+def sigmoid(variance):
+    return 1 - 2*(exp(variance) / (5 + exp(variance-1)))
 
 if __name__ == "__main__":
 
