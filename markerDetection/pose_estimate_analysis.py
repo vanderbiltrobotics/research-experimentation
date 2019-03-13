@@ -10,6 +10,8 @@ from matplotlib.ticker import PercentFormatter
 # list = [[1],2,3]
 # print(list[0][0])
 
+# format of data is
+
 def get_true_translation(dist, theta, radius):
     true_x = radius * cos(theta)
     true_z = dist + (radius * sin(theta))

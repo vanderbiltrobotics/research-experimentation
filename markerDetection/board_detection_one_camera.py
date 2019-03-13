@@ -33,10 +33,9 @@ board = aruco.GridBoard_create(5, 7, markerLength, markerSeparation, aruco_dict)
 cap = cv.VideoCapture(0)
 
 '''create file to store data'''
-PATH = "data/pose_estimates/mono/"
+PATH = "" #"data/pose_estimates/mono/"
 filename = "test.txt"
 f = open(PATH + filename, "a")
-f = open(PATH + filename, "w")
 count = 0
 
 while 1:
