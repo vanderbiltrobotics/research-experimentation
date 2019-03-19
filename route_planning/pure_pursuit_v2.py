@@ -1,5 +1,3 @@
-
-
 # Import ROS packages
 import rospy
 from geometry_msgs.msg import Twist, Pose, PointStamped
@@ -139,7 +137,7 @@ class PurePursuit:
             goal_msg.point.x = goal[0]
             goal_msg.point.y = goal[1]
 
-            # Publish message
+            # Publish messagew
             self.twist_pub.publish(new_twist)
             self.goal_pub.publish(goal_msg)
 
